@@ -1,0 +1,208 @@
+#!/usr/bin/env python3
+"""
+Generate LaTeX Beamer slides for DataMender project presentation.
+Based on the project requirements and documented plans.
+"""
+
+import os
+
+
+def create_latex_presentation():
+    """Create the DataMender project presentation as raw LaTeX."""
+    
+    latex_content = r"""
+\documentclass{beamer}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+
+% Modern theme and colors
+\usetheme{Rochester}
+\usecolortheme{seahorse}
+
+% Custom color scheme
+\definecolor{primaryblue}{RGB}{41, 128, 185}
+\definecolor{accentgreen}{RGB}{39, 174, 96}
+\definecolor{warningorange}{RGB}{230, 126, 34}
+\definecolor{darkgray}{RGB}{52, 73, 94}
+
+\setbeamercolor{structure}{fg=primaryblue}
+\setbeamercolor{frametitle}{bg=primaryblue, fg=white}
+\setbeamercolor{title}{fg=primaryblue}
+\setbeamercolor{block title}{bg=primaryblue, fg=white}
+\setbeamercolor{block body}{bg=primaryblue!10, fg=darkgray}
+\setbeamercolor{block title alerted}{bg=warningorange, fg=white}
+\setbeamercolor{block body alerted}{bg=warningorange!10, fg=darkgray}
+\setbeamercolor{block title example}{bg=accentgreen, fg=white}
+\setbeamercolor{block body example}{bg=accentgreen!10, fg=darkgray}
+
+% Custom fonts
+\setbeamerfont{title}{size=\Large, series=\bfseries}
+\setbeamerfont{frametitle}{size=\large, series=\bfseries}
+\setbeamerfont{block title}{size=\normalsize, series=\bfseries}
+
+% Remove navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+% Custom footer
+\setbeamertemplate{footline}{
+    \leavevmode%
+    \hbox{%
+        \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+            \usebeamerfont{author in head/foot}\insertshortauthor
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
+            \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+            \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+        \end{beamercolorbox}%
+    }%
+    \vskip0pt%
+}
+
+% Title information
+\title{DataMender: Smart Cleaning for Large CSV/Parquet Files}
+\author{Group 8}
+\institute{Big Data Systems, Algorithms and Networks}
+\date{September 2025}
+
+\begin{document}
+
+% Title slide with custom styling
+\begin{frame}[plain]
+    \begin{center}
+        \vspace{1cm}
+        {\huge\color{primaryblue}\textbf{DataMender}}
+        
+        \vspace{0.5cm}
+        {\Large\color{darkgray} Smart Cleaning for Large CSV/Parquet Files}
+        
+        \vspace{1.5cm}
+        \begin{tikzpicture}
+            \draw[accentgreen, thick, rounded corners, fill=accentgreen!20] (-4,-0.6) rectangle (4,0.6);
+            \node[darkgray, font=\large\bfseries] at (0,0) {AMS 560 / CSE 542 - Fall 2025};
+        \end{tikzpicture}
+        
+        \vspace{0.8cm}
+        {\color{accentgreen}\textbf{Group 8}} \hspace{2cm} {\color{darkgray} September 2025}
+        
+        \vspace{0.8cm}
+        \begin{minipage}{0.9\textwidth}
+            \centering
+            {\footnotesize\color{darkgray}
+            \textbf{Team Members:} \\[0.2cm]
+            Ahmad Javadi Nezhad • Daniel Bazmandeh \\
+            Iliya Mirzaei • Nicholas Tardugno • Tamali Halder
+            }
+        \end{minipage}
+    \end{center}
+\end{frame}
+
+% Slide 1: Background, Problem Statement, Objectives
+\begin{frame}
+    \frametitle{Background \& Problem Statement}
+    
+    \begin{block}{What Has Been Done}
+        \begin{itemize}
+            \item OpenRefine: Manual data cleaning workflows [1]
+            \item Trifacta/Alteryx: Rule-based transformations [2]
+            \item HoloClean: ML-based anomaly detection [3]
+        \end{itemize}
+    \end{block}
+    
+    \vspace{0.15cm}
+    
+    \begin{alertblock}{The Gap We Address}
+        \textbf{No LLM-powered rule discovery} for large-scale data quality
+    \end{alertblock}
+    
+    \vspace{0.15cm}
+    
+    \begin{exampleblock}{Our Objectives}
+        \begin{itemize}
+            \item Fast profiling with Polars (< 5 sec for 5-10GB)
+            \item LLM-suggested cleaning rules
+            \item Human-in-the-loop validation
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+% Slide 2: Expected Deliverables and Timeline
+\begin{frame}
+    \frametitle{Deliverables \& Timeline}
+    
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{What We'll Deliver}
+                \begin{enumerate}
+                    \item Streamlit cleaning app
+                    \item Polars-based profiler
+                    \item LLM rule discovery engine
+                    \item Reusable configurations
+                    \item Demo with metrics
+                \end{enumerate}
+            \end{block}
+        \end{column}
+        
+        \begin{column}{0.48\textwidth}
+            \begin{exampleblock}{8-Week Plan}
+                \small
+                \begin{itemize}
+                    \item \textbf{Weeks 1-2:} Dataset \& profiler
+                    \item \textbf{Weeks 3-4:} LLM \& validation UI
+                    \item \textbf{Weeks 5-6:} Batch processing
+                    \item \textbf{Weeks 7-8:} Demo \& report
+                \end{itemize}
+                \vspace{0.3cm}
+            \end{exampleblock}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% References slide
+\begin{frame}[allowframebreaks]
+    \frametitle{References}
+    
+    \footnotesize
+    \begin{enumerate}
+        \item OpenRefine. "A free, open source tool for working with messy data." \\
+              \url{https://openrefine.org/}
+        
+        \item Trifacta Inc. "Data Preparation Platform for Analytics \& ML." \\
+              Acquired by Alteryx, 2022.
+        
+        \item Rekatsinas, T. et al. "HoloClean: Holistic Data Repairs with Probabilistic Inference." \\
+              \textit{VLDB Endowment}, 2017.
+    \end{enumerate}
+\end{frame}
+
+\end{document}
+"""
+    
+    return latex_content
+
+
+def main():
+    """Generate the LaTeX presentation file."""
+    print("Generating DataMender presentation slides...")
+    
+    # Create the document content
+    latex_content = create_latex_presentation()
+    
+    # Get the directory where this script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_file = os.path.join(script_dir, 'datamender_presentation.tex')
+    
+    # Write to file
+    with open(output_file, 'w') as f:
+        f.write(latex_content)
+    
+    print("✅ Generated datamender_presentation.tex")
+    print("To compile to PDF, run: pdflatex datamender_presentation.tex")
+
+
+if __name__ == "__main__":
+    main()
