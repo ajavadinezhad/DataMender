@@ -123,7 +123,7 @@ def create_latex_presentation():
     
     \begin{exampleblock}{Our Objectives}
         \begin{itemize}
-            \item Fast profiling with Polars (< 5 sec for 5-10GB)
+            \item Fast profiling with Polars for multi-GB files
             \item LLM-suggested cleaning rules
             \item Human-in-the-loop validation
         \end{itemize}
