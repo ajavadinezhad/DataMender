@@ -4,22 +4,31 @@ DataMender: Smart Cleaning for Large CSV/Parquet
 
 ## Week-by-Week Roadmap
 
-### **Week 1 – Kickoff & Dataset**
+### **Week ### 🎯 **Final Deliverables**
+
+1. Working interactive data cleaning tool:
+
+   * Profiles large file
+   * Suggests constraints with AI
+   * Applies vectorized fixes
+2. YAML of discovered rules.
+3. Short video: run through the same "ride-sharing CSV" example.
+4. Brief report with metrics & lessons.f & Dataset**
 
 * Finalize dataset (e.g., 5–10 GB ride-sharing or taxi CSV/Parquet).
 * Draft clear **problem statement** and objectives.
 * Split roles inside group (profiling, LLM prompts, UI).
-* Set up repo & dev environment (Python + Polars + Streamlit).
+* Set up repo & dev environment (Python + high-performance libraries + interactive interface).
 
 ---
 
 ### **Week 2 – Core Profiler**
 
-* Implement fast scan with Polars:
+* Implement fast scan with optimized data processing:
 
   * Row count, column types, % missing, min/max, histograms.
 * Make profiler return a JSON summary for each column.
-* Test on a small sample to ensure <5 s latency.
+* Test on a small sample to ensure fast processing performance.
 
 ---
 

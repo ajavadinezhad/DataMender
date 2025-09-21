@@ -123,7 +123,7 @@ def create_latex_presentation():
     
     \begin{exampleblock}{Our Objectives}
         \begin{itemize}
-            \item Fast profiling with Polars for multi-GB files
+            \item Fast profiling for multi-GB files
             \item LLM-suggested cleaning rules
             \item Human-in-the-loop validation
         \end{itemize}
@@ -138,8 +138,8 @@ def create_latex_presentation():
         \begin{column}{0.48\textwidth}
             \begin{block}{What We'll Deliver}
                 \begin{enumerate}
-                    \item Streamlit cleaning app
-                    \item Polars-based profiler
+                    \item Interactive data cleaning tool
+                    \item High-performance data profiler
                     \item LLM rule discovery engine
                     \item Reusable configurations
                     \item Demo with metrics
