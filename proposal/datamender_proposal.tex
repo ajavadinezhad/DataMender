@@ -21,7 +21,8 @@
 
 % Custom formatting
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt}
+\setlength{\parskip}{4pt}
+\setlength{\baselineskip}{12pt}
 
 % Header formatting
 \usepackage{fancyhdr}
@@ -59,9 +60,11 @@
 % Section 1: Background and Motivation
 \section{\color{primaryblue}Background and Motivation}
 
-Data quality issues affect organizations working with large-scale datasets. Current solutions like OpenRefine require manual intervention, while Trifacta/Alteryx rely on rule-based transformations. However, \textbf{no existing tool uses Large Language Models (LLMs) for rule discovery} in large-scale data quality management.
+\textbf{Concrete Application:} DataMender targets \textit{ride-sharing companies} processing 5-10GB daily trip datasets with inconsistent formatting, missing timestamps, and duplicate records. Current solutions like OpenRefine require manual rule creation, while Trifacta/Alteryx use predefined transformations without LLM integration.
 
-Data scientists spend 60-80\% of their time on data cleaning tasks, yet lack automated tools that can suggest cleaning rules for multi-gigabyte datasets. This project addresses this need by combining data profiling with LLM-powered rule discovery and human validation.
+\textbf{The Gap:} No existing tool combines \textbf{automated LLM-powered rule discovery} with \textbf{human validation workflows} for large-scale data quality management. Data scientists spend 60-80\% of their time on data cleaning, yet lack tools that can suggest context-aware cleaning rules for multi-gigabyte datasets.
+
+\textbf{Recent Work (2024-2025):} Recent studies show LLMs can generate data transformation rules, but existing implementations lack: (1) Large-scale file handling, (2) Human-in-the-loop validation, (3) Domain-specific rule templates, and (4) Hallucination mitigation strategies.
 
 % Section 2: Problem Statement and Importance  
 \section{\color{primaryblue}Problem Statement and Importance}
@@ -72,45 +75,36 @@ Data scientists spend 60-80\% of their time on data cleaning tasks, yet lack aut
 
 \textbf{Target Use Case:} Ride-sharing companies with 5-10GB CSV files containing millions of records with inconsistent formatting, missing values, and data quality issues requiring cleaning rules.
 
-% Section 3: Challenges
-\section{\color{primaryblue}Challenges}
+% Section 3: Challenges and Novelty
+\section{\color{primaryblue}Challenges and Novelty}
 
-Key challenges include: (1) Profiling multi-gigabyte files efficiently without memory overflow, (2) Designing effective LLM prompts for rule discovery across different data types, (3) Creating UI tool for human validation, (4) Ensuring vectorized operations handle large-scale transformations, and (5) Balancing automated suggestions with human oversight.
+\textbf{Technical Challenges:} Profiling multi-gigabyte files without memory overflow, designing effective LLM prompts, creating intuitive validation UI, ensuring vectorized operations for large-scale transformations.
 
-% Section 4: Solution Approach
-\section{\color{primaryblue}Solution Approach}
+\textbf{LLM Hallucination Mitigation:} (1) \textbf{Confidence Scoring:} Each suggested rule includes confidence metrics based on data coverage and pattern consistency, (2) \textbf{Multi-Model Validation:} Cross-validate rules using GPT-4, Claude-3, and local models, (3) \textbf{Human Validation Required:} All rules must pass human review before application, (4) \textbf{Reversible Operations:} All transformations are logged for easy rollback, (5) \textbf{Test Data Validation:} Rules tested on sample data before full application.
 
-\textbf{DataMender} combines three key components:
+\textbf{Novel Contributions:} (1) First LLM-powered rule discovery for large-scale CSV/Parquet files, (2) Human-in-the-loop validation workflow, (3) Domain-specific templates for ride-sharing data, (4) Hallucination-resistant rule generation pipeline.
 
-(1) \textbf{Data Profiler:} Fast scanning using Pandas/NumPy/Dask to analyze row counts, column types, missing percentages, and histograms.
+% Section 4: Solution Approach and Competitors
+\section{\color{primaryblue}Solution Approach and Competitors}
 
-(2) \textbf{LLM Rule Discovery Engine:} Prompts that suggest range constraints, uniqueness checks, monotonicity validation, and sanity checks.
+\textbf{DataMender Components:} (1) \textbf{Data Profiler:} Fast scanning using Pandas/NumPy/Dask, (2) \textbf{LLM Rule Discovery Engine:} Multi-model prompts (GPT-4, Claude-3) with confidence scoring, (3) \textbf{Human Validation:} Interactive UI for reviewing/editing rules.
 
-(3) \textbf{Human Validation:} UI tool for reviewing, accepting, editing, or rejecting suggested rules.
+\textbf{Key Competitors:} OpenRefine (manual rules, no LLM), Trifacta/Alteryx (expensive, rule-based only), HoloClean (anomaly detection only, no rule generation).
+
+\textbf{DataMender's Competitive Advantages:} (1) \textbf{First LLM-powered rule discovery} for large-scale data, (2) \textbf{Human-in-the-loop validation} preventing hallucinations, (3) \textbf{Domain-specific templates} for ride-sharing data, (4) \textbf{Multi-model validation} reducing false positives, (5) \textbf{Free and open-source} unlike enterprise tools.
 
 
-% Section 5: Deliverables and Timeline
-\section{\color{primaryblue}Deliverables and Timeline}
+% Section 5: Deliverables and Work Division
+\section{\color{primaryblue}Deliverables and Work Division}
 
-\textbf{8-Week Timeline:} Weeks 1-2: Dataset selection and profiler implementation. Weeks 3-4: LLM prompt templates and UI tool. Weeks 5-6: Batch processing engine. Weeks 7-8: Polish, testing, and documentation.
+\textbf{8-Week Timeline:} Weeks 1-2: Dataset selection and profiler. Weeks 3-4: LLM prompts and UI tool. Weeks 5-6: Batch processing engine. Weeks 7-8: Testing and documentation.
 
-\textbf{Final Deliverables:} (1) Working UI tool for data cleaning, (2) YAML configuration files with discovered cleaning rules, (3) Demonstration video showing complete workflow, (4) Technical report with performance metrics and lessons learned.
+\textbf{Final Deliverables:} (1) Working UI tool, (2) YAML configuration files, (3) Demo video, (4) Technical report with performance metrics vs. GPT-4, OpenRefine, Trifacta baselines.
 
-% Section 6: Division of Work
-\section{\color{primaryblue}Division of Work Among Group Members}
-
-\textbf{Ahmad Javadi Nezhad:} Project coordination, LLM integration, and rule discovery engine development.
-
-\textbf{Daniel Bazmandeh:} Data profiler implementation and optimization.
-
-\textbf{Iliya Mirzaei:} Validation UI design and UI interface development.
-
-\textbf{Nicholas Tardugno:} Batch processing engine and data transformation implementation.
-
-\textbf{Tamali Halder:} Testing, metrics collection, documentation, and final report preparation.
+\textbf{Work Division:} \textbf{Ahmad:} Project coordination, LLM integration, rule discovery engine development. \textbf{Daniel:} Data profiler implementation and optimization. \textbf{Iliya:} Validation UI design and interface development. \textbf{Nicholas:} Batch processing engine and data transformation. \textbf{Tamali:} Testing, metrics collection, documentation, and final report preparation.
 
 All members will contribute to dataset selection, testing, and final presentation preparation.
 
-\textbf{Expected Impact:} DataMender will demonstrate how LLM-powered rule discovery can improve large-scale data cleaning workflows, providing a foundation for future research in AI-assisted data quality management.
+\textbf{Expected Impact:} DataMender demonstrates LLM-powered rule discovery for large-scale data cleaning workflows, providing foundation for future AI-assisted data quality research.
 
 \end{document}
