@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.9.27)  27 SEP 2025 01:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.9.27)  27 SEP 2025 09:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -584,24 +584,24 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 (./datamender_proposal.aux)
 \openout1 = `datamender_proposal.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 35.
-LaTeX Font Info:    ... okay on input line 35.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -611,15 +611,15 @@ LaTeX Font Info:    ... okay on input line 35.
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: 
-* h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
-* v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
+* h-part:(L,W,R)=(57.81621pt, 498.66258pt, 57.81621pt)
+* v-part:(T,H,B)=(57.81621pt, 679.33757pt, 57.81621pt)
 * \paperwidth=614.295pt
 * \paperheight=794.96999pt
-* \textwidth=469.75502pt
-* \textheight=650.43001pt
-* \oddsidemargin=0.0pt
-* \evensidemargin=0.0pt
-* \topmargin=-37.0pt
+* \textwidth=498.66258pt
+* \textheight=679.33757pt
+* \oddsidemargin=-14.45378pt
+* \evensidemargin=-14.45378pt
+* \topmargin=-51.45378pt
 * \headheight=12.0pt
 * \headsep=25.0pt
 * \topskip=11.0pt
@@ -659,7 +659,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 35.
+Package hyperref Info: Link coloring OFF on input line 34.
 
 (./datamender_proposal.out) (./datamender_proposal.out)
 \@outlinefile=\write4
@@ -668,15 +668,15 @@ Package hyperref Info: Link coloring OFF on input line 35.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@ifnextchar' on input line 61.
+(hyperref)                removing `\@ifnextchar' on input line 59.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@ifnextchar' on input line 70.
+(hyperref)                removing `\@ifnextchar' on input line 66.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@ifnextchar' on input line 79.
+(hyperref)                removing `\@ifnextchar' on input line 71.
 
 
 
@@ -692,11 +692,69 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 ]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@ifnextchar' on input line 88.
+(hyperref)                removing `\@ifnextchar' on input line 82.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@ifnextchar' on input line 98.
+(hyperref)                removing `\@ifnextchar' on input line 91.
+
+LaTeX Font Info:    Trying to load font information for U+msa on input line 96.
+
+(/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 96.
+
+
+(/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+Overfull \hbox (14.72325pt too wide) in paragraph at lines 98--98
+[]\T1/cmr/bx/n/9 Trifacta/Alteryx| 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 100--100
+[]\T1/cmr/m/n/9 Template-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 100--101
+[]\T1/cmr/bx/n/9 Full LLM au-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 102--102
+[]\T1/cmr/m/n/9 Memory-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
+[]\T1/cmr/bx/n/9 Multi-GB op-ti-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 104--104
+[]\T1/cmr/m/n/9 Enterprise
+ []
+
+
+Underfull \hbox (badness 2478) in paragraph at lines 104--105
+[]\T1/cmr/bx/n/9 AI-assisted val-i-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 106--107
+[]\T1/cmr/bx/n/9 Multi-model
+ []
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\@ifnextchar' on input line 116.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\@ifnextchar' on input line 125.
 
 
 
@@ -707,34 +765,44 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[2] (./datamender_proposal.aux)
+[2]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[3] (./datamender_proposal.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `datamender_proposal.out' has not changed.
-(rerunfilecheck)             Checksum: 8D83F3B31B42B529D0E74AC080E0AC7A;1239.
+(rerunfilecheck)             Checksum: 46C7DB2310B7E473DF52008CED164AC3;1732.
  ) 
 Here is how much of TeX's memory you used:
- 21064 strings out of 475171
- 386522 string characters out of 5767095
- 770868 words of memory out of 5000000
- 43734 multiletter control sequences out of 15000+600000
- 566348 words of font info for 47 fonts, out of 8000000 for 9000
+ 21136 strings out of 475171
+ 387551 string characters out of 5767095
+ 774974 words of memory out of 5000000
+ 43775 multiletter control sequences out of 15000+600000
+ 570859 words of font info for 63 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 84i,11n,87p,587b,613s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,11n,87p,665b,613s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1095.600pk
-> </home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk>
- </home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1095.600pk> 
-</home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> <
-/home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1440.600pk> </
-home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx2488.600pk> </h
-ome/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1095.600pk> </ho
-me/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk>
-Output written on datamender_proposal.pdf (2 pages, 79847 bytes).
+> </home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0900.600pk>
+ </home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx0900.600pk> 
+</home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk> <
+/home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1095.600pk> </
+home/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </h
+ome/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1728.600pk> </ho
+me/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1095.600pk> </hom
+e/ahmadjn/.texlive/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk>
+Output written on datamender_proposal.pdf (3 pages, 94220 bytes).
 PDF statistics:
- 302 PDF objects out of 1000 (max. 8388607)
- 70 compressed objects within 1 object stream
- 8 named destinations out of 1000 (max. 500000)
- 53 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 382 PDF objects out of 1000 (max. 8388607)
+ 93 compressed objects within 1 object stream
+ 18 named destinations out of 1000 (max. 500000)
+ 69 words of extra memory for PDF output out of 10000 (max. 10000000)
 
