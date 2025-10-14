@@ -48,12 +48,16 @@ class DataProfiler:
         col_data = self.df[column]
         dtype = str(col_data.dtype)
         
+        total_count = len(col_data)
+        null_count = col_data.null_count()
+        null_percentage = round(null_count / total_count * 100, 2) if total_count > 0 else 0.0
+        
         profile = {
             "name": column,
             "dtype": dtype,
-            "total_count": len(col_data),
-            "null_count": col_data.null_count(),
-            "null_percentage": round(col_data.null_count() / len(col_data) * 100, 2),
+            "total_count": total_count,
+            "null_count": null_count,
+            "null_percentage": null_percentage,
             "unique_count": col_data.n_unique(),
         }
         
