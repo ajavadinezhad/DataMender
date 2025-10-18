@@ -34,6 +34,9 @@ class DataProfiler:
         
         if sample_size and len(self.df) > sample_size:
             self.df = self.df.sample(n=sample_size)
+
+        # Enable fluent chaining: DataProfiler(...).load_data(...).profile_all()
+        return self
     
     def profile_column(self, column: str) -> Dict[str, Any]:
         """

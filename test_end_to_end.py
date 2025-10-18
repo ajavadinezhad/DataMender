@@ -569,6 +569,242 @@ class DataMenderE2ETest:
             traceback.print_exc()
             return False
     
+    def test_nonllm_edge_strings_and_nulls(self):
+        """Non-LLM edges: empty/whitespace, mixed numeric-like strings, date-like strings (no false numeric checks)."""
+        print("\n" + "="*60)
+        print("🧪 TEST 8: Non-LLM Edges - Strings & Nulls")
+        print("="*60)
+
+        import tempfile
+        try:
+            # Case A: empty/whitespace should yield empty_string_check (and often null_check)
+            df_a = pl.DataFrame({"x": ["", " ", "\t", "ok", "ok", "ok", None]})
+            pth_a = tempfile.mktemp(suffix=".csv"); df_a.write_csv(pth_a)
+            profile_a = DataProfiler(pth_a).load_data(sample_size=None).profile_all()
+            rules_a = RuleDiscovery().discover_rules(profile_a, use_llm=False)
+            types_a = {r.get("type") for r in rules_a.get("x", [])}
+            a_ok = "empty_string_check" in types_a
+            self.log_test("Strings & Nulls - empty/whitespace", a_ok, f"Rule types: {types_a}")
+
+            # Case B: mixed numeric-like strings should NOT trigger numeric checks
+            df_b = pl.DataFrame({"col": ["12", "13", "foo", "14"]})
+            pth_b = tempfile.mktemp(suffix=".csv"); df_b.write_csv(pth_b)
+            profile_b = DataProfiler(pth_b).load_data(sample_size=None).profile_all()
+            rules_b = RuleDiscovery().discover_rules(profile_b, use_llm=False)
+            bad_b = [r for r in rules_b.get("col", []) if r.get("type") in {"negative_check", "range_check"}]
+            b_ok = (len(bad_b) == 0)
+            self.log_test("Strings & Nulls - mixed numeric-like", b_ok, f"Unexpected numeric checks: {bad_b}")
+
+            # Case C: date-like strings should NOT trigger numeric checks
+            df_c = pl.DataFrame({"event_date": ["2024-01-01", "2024-01-02", "oops", "2024-01-04"]})
+            pth_c = tempfile.mktemp(suffix=".csv"); df_c.write_csv(pth_c)
+            profile_c = DataProfiler(pth_c).load_data(sample_size=None).profile_all()
+            rules_c = RuleDiscovery().discover_rules(profile_c, use_llm=False)
+            bad_c = [r for r in rules_c.get("event_date", []) if r.get("type") in {"negative_check", "range_check"}]
+            c_ok = (len(bad_c) == 0)
+            self.log_test("Strings & Nulls - date-like", c_ok, f"No numeric checks expected; got: {bad_c}")
+
+            return a_ok and b_ok and c_ok
+        except Exception as e:
+            self.log_test("Strings & Nulls", False, f"Error: {e}")
+            return False
+
+    def test_nonllm_edge_identifiers_and_uniqueness(self):
+        """Non-LLM edges: constant column not unique; leading-zero strings not numeric-checked."""
+        print("\n" + "="*60)
+        print("🧪 TEST 9: Non-LLM Edges - Identifiers & Uniqueness")
+        print("="*60)
+
+        import tempfile
+        try:
+            # Case D: constant column should NOT be marked unique
+            df_d = pl.DataFrame({"const": ["same"] * 100})
+            pth_d = tempfile.mktemp(suffix=".csv"); df_d.write_csv(pth_d)
+            profile_d = DataProfiler(pth_d).load_data(sample_size=None).profile_all()
+            rules_d = RuleDiscovery().discover_rules(profile_d, use_llm=False)
+            types_d = {r.get("type") for r in rules_d.get("const", [])}
+            d_ok = "uniqueness" not in types_d
+            self.log_test("Identifiers - constant not unique", d_ok,
+                        f"Rule types: {types_d} (should NOT include 'uniqueness')")
+
+            # Case E: leading-zero IDs (zip-like) should NOT trigger numeric checks
+            df_e = pl.DataFrame({"zip_code": ["00501", "02115", "10001", "00000"]})
+            pth_e = tempfile.mktemp(suffix=".csv"); df_e.write_csv(pth_e)
+            profile_e = DataProfiler(pth_e).load_data(sample_size=None).profile_all()
+            rules_e = RuleDiscovery().discover_rules(profile_e, use_llm=False)
+            types_e = {r.get("type") for r in rules_e.get("zip_code", [])}
+            e_ok = ("negative_check" not in types_e) and ("range_check" not in types_e)
+            self.log_test("Identifiers - leading-zero safe", e_ok,
+                        f"Rule types: {types_e} (should NOT include numeric checks)")
+
+            return d_ok and e_ok
+        except Exception as e:
+            self.log_test("Identifiers & Uniqueness", False, f"Error: {e}")
+            return False
+
+    def test_cli_smoke_missing_sample(self):
+        """CLI smoke test: should exit cleanly and guide user if sample file is missing (suppress output)"""
+        print("\n" + "="*60)
+        print("🧪 TEST 10: CLI Smoke - Missing Sample")
+        print("="*60)
+
+        try:
+            import io
+            import contextlib
+            import test_cli as _cli
+
+            # Suppress stdout/stderr so CLI messages (including ❌) don't appear in test logs
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+                _cli.main()
+
+            # We only care that it didn't raise
+            self.log_test("CLI Smoke", True, "CLI ran without exception (output suppressed)")
+            return True
+        except Exception as e:
+            self.log_test("CLI Smoke", False, f"CLI raised: {e}")
+            return False
+
+    def test_llm_rules_present_when_key(self):
+        """LLM (Groq): if a real key is present, we should see >0 LLM rules."""
+        print("\n" + "="*60)
+        print("🤖 TEST 11: LLM Online - Groq Rules Present (conditional)")
+        print("="*60)
+
+        import os, tempfile, polars as pl
+        if not os.getenv("GROQ_API_KEY"):
+            self.log_test("LLM Online (Groq)", True, "Skipped (no GROQ_API_KEY)")
+            return True
+
+        try:
+            # small synthetic dataset
+            df = pl.DataFrame({
+                "age": [10, 20, 150, 200],  # outlier to prompt a range rule
+                "price": [1.99, 2.49, -5.00, 3.00],  # negative to prompt a fix
+                "pct": [0, 50, 101, 200],  # out of 0-100 to prompt a range rule
+            })
+            tmp = tempfile.mktemp(suffix=".csv")
+            df.write_csv(tmp)
+
+            profiler = DataProfiler(tmp).load_data(sample_size=None)
+            profile = profiler.profile_all()
+
+            rules = RuleDiscovery(llm_provider="groq").discover_rules(profile, use_llm=True)
+
+            # Count LLM-sourced rules
+            llm_rules = sum(
+                1 for rr in rules.values() for r in rr if r.get("source") == "llm"
+            )
+            self.log_test("LLM Online (Groq)", llm_rules > 0,
+                          f"LLM rules produced: {llm_rules}")
+            return llm_rules > 0
+
+        except Exception as e:
+            self.log_test("LLM Online (Groq)", False, f"Error: {e}")
+            return False
+
+    def test_llm_robustness_parsing_and_errors(self):
+        """LLM robustness (no key): code-fenced JSON parsing + malformed output + runtime error, all without crashing."""
+        print("\n" + "="*60)
+        print("🛡️ TEST 12: LLM Robustness — Parsing & Errors")
+        print("="*60)
+
+        import tempfile
+        # Always restore _ensure_llm afterward
+        orig_ensure = RuleDiscovery._ensure_llm
+        try:
+            # ---- A) code-fenced JSON ----
+            def fake_fenced(self):
+                class _FakeLLM:
+                    def generate(self, prompt: str, system: str = "") -> str:
+                        return (
+                            "```json\n"
+                            "{\n"
+                            "  \"age\": [\n"
+                            "    {\"type\":\"range_check\",\"description\":\"0-150\",\"action\":\"clip_range\",\"severity\":\"high\"}\n"
+                            "  ]\n"
+                            "}\n"
+                            "```"
+                        )
+                self.llm = _FakeLLM()
+            RuleDiscovery._ensure_llm = fake_fenced
+
+            df = pl.DataFrame({"age": [10, 200]})
+            pth = tempfile.mktemp(suffix=".csv"); df.write_csv(pth)
+            profile = DataProfiler(pth).load_data(sample_size=None).profile_all()
+            rules_fenced = RuleDiscovery(llm_provider="groq").discover_rules(profile, use_llm=True)
+            has_llm = any(r.get("source") == "llm" for r in rules_fenced.get("age", []))
+            self.log_test("LLM Parsing (fenced JSON)", has_llm, f"Rules: {rules_fenced.get('age', [])}")
+
+            # ---- B) malformed JSON ----
+            def fake_bad(self):
+                class _FakeLLM:
+                    def generate(self, prompt: str, system: str = "") -> str:
+                        return "this is not json at all"
+                self.llm = _FakeLLM()
+            RuleDiscovery._ensure_llm = fake_bad
+
+            rules_bad = RuleDiscovery(llm_provider="groq").discover_rules(profile, use_llm=True)
+            llm_bad = sum(1 for rr in rules_bad.values() for r in rr if r.get("source") == "llm")
+            self.log_test("LLM Malformed Output", llm_bad == 0, f"LLM rules: {llm_bad}")
+
+            # ---- C) runtime error (rate limit/timeout) ----
+            def fake_error(self):
+                class _FakeLLM:
+                    def generate(self, prompt: str, system: str = "") -> str:
+                        raise RuntimeError("rate limit")
+                self.llm = _FakeLLM()
+            RuleDiscovery._ensure_llm = fake_error
+
+            rules_err = RuleDiscovery(llm_provider="groq").discover_rules(profile, use_llm=True)
+            llm_err = sum(1 for rr in rules_err.values() for r in rr if r.get("source") == "llm")
+            self.log_test("LLM Runtime Error", llm_err == 0, f"LLM rules: {llm_err}")
+
+            return has_llm and (llm_bad == 0) and (llm_err == 0)
+        except Exception as e:
+            self.log_test("LLM Robustness", False, f"Error: {e}")
+            return False
+        finally:
+            RuleDiscovery._ensure_llm = orig_ensure
+
+    def test_ollama_rules_present_when_local(self):
+        """LLM (Ollama): if DATAMENDER_TEST_OLLAMA=1 and service is up, expect >0 LLM rules."""
+        print("\n" + "="*60)
+        print("🤖 TEST 13: LLM Online - Ollama Rules Present (conditional)")
+        print("="*60)
+
+        import os, tempfile
+        if os.getenv("DATAMENDER_TEST_OLLAMA") != "1":
+            self.log_test("LLM Online (Ollama)", True, "Skipped (DATAMENDER_TEST_OLLAMA!=1)")
+            return True
+
+        try:
+            df = pl.DataFrame({"age": [10, 200], "pct": [-1, 150]})
+            tmp = tempfile.mktemp(suffix=".csv")
+            df.write_csv(tmp)
+
+            profile = DataProfiler(tmp).load_data(sample_size=None).profile_all()
+            rules = RuleDiscovery(llm_provider="ollama").discover_rules(profile, use_llm=True)
+
+            llm_rules = sum(1 for rr in rules.values() for r in rr if r.get("source") == "llm")
+            self.log_test("LLM Online (Ollama)", llm_rules > 0, f"LLM rules: {llm_rules}")
+            return llm_rules > 0
+        except Exception as e:
+            self.log_test("LLM Online (Ollama)", False, f"Error: {e}")
+            return False
+
+    def test_invalid_extension_rejected(self):
+        print("\n" + "="*60)
+        print("🧪 TEST 14: Invalid Extension Rejected")
+        print("="*60)
+        try:
+            DataProfiler("weird.xlsx").load_data()
+            self.log_test("Invalid Extension", False, "Should have raised for unsupported format")
+            return False
+        except Exception:
+            self.log_test("Invalid Extension", True, "Correctly rejected non-CSV/Parquet")
+            return True
+
     def cleanup(self):
         """Clean up test resources"""
         if self.test_data_path and Path(self.test_data_path).exists():
@@ -613,6 +849,30 @@ class DataMenderE2ETest:
             
             self.test_performance_benchmarks()
             self.test_error_handling()
+
+            # --- Non-LLM robustness/edge cases ---
+            if not self.test_nonllm_edge_strings_and_nulls():
+                return False
+            if not self.test_nonllm_edge_identifiers_and_uniqueness():
+                return False
+
+            # CLI smoke
+            if not self.test_cli_smoke_missing_sample():
+                return False
+
+            # --- LLM-enabled path tests ---
+            if not self.test_llm_rules_present_when_key():
+                return False
+            if not self.test_llm_robustness_parsing_and_errors():
+                return False
+
+            # --- LLM-enabled path: Ollama (conditional) ---
+            if not self.test_ollama_rules_present_when_local():
+                return False
+
+            # unsupported file extension edge case
+            if not self.test_invalid_extension_rejected():
+                return False
             
             # Final results
             overall_duration = time.time() - overall_start_time

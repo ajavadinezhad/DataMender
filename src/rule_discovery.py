@@ -12,10 +12,36 @@ class RuleDiscovery:
         Initialize rule discovery
         
         Args:
-            llm_provider: "openai" or "ollama"
+            llm_provider: one of {"groq","ollama","openai","mock"}
         """
-        self.llm = LLMClient(provider=llm_provider)
+
+        self._ALLOWED_PROVIDERS = {"groq", "ollama", "openai", "mock"}
+
+        # Fail fast for invalid provider (Error Handling test expects this)
+        if llm_provider not in self._ALLOWED_PROVIDERS:
+            raise ValueError(f"Invalid LLM provider: {llm_provider}")
+            
+        self._llm_provider = llm_provider
+        self.llm = None
+        self._llm_error = None
+
+
+    def _ensure_llm(self):
+        if self.llm is not None:
+            return
+
+        try:
+            self.llm = LLMClient(provider=self._llm_provider)
+            self._llm_error = None
+
+        except Exception as e:
+            # Valid provider but unavailable (e.g., missing GROQ_API_KEY or Ollama not running).
+            # Do NOT raise-tests should continue and fall back to heuristics.
+            self.llm = None
+            self._llm_error = f"{self._llm_provider} unavailable: {e}"
+
     
+
     def universal_checks(self, column_profile: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Apply universal sanity checks (heuristics)
@@ -88,8 +114,8 @@ class RuleDiscovery:
                         "source": "heuristic"
                     })
         
-        # String checks
-        if dtype == "Utf8":
+        # String checks (support both Polars representations)
+        if dtype in ("Utf8", "String"):
             # Empty string check
             rules.append({
                 "column": col_name,
@@ -264,9 +290,7 @@ Return only JSON object mapping column names to rule arrays."""
                 return rules_dict
             return {}
         except Exception as e:
-            print(f"[ERROR] Batch LLM suggestion failed: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"[INFO] LLM unavailable ({e}); continuing with heuristics only.")
             return {}
     
     def discover_rules(self, profile: Dict[str, Any], use_llm: bool = True) -> Dict[str, List[Dict[str, Any]]]:
@@ -290,7 +314,8 @@ Return only JSON object mapping column names to rule arrays."""
         
         # Second pass: batch LLM suggestions (ONE call for all columns!)
         if use_llm:
-            llm_rules_dict = self.llm_suggest_rules_batch(profile["columns"])
+            self._ensure_llm()
+            llm_rules_dict = self.llm_suggest_rules_batch(profile["columns"]) if self.llm else {}
             
             # Merge LLM rules into existing rules
             for col_name, llm_rules in llm_rules_dict.items():
