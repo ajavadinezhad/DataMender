@@ -9,7 +9,7 @@ Smart data cleaning tool for large CSV/Parquet files using AI-powered rule disco
 - ✅ **Rule Discovery** - Heuristic + LLM rule generation  
 - ✅ **Human Validation** - Interactive Streamlit UI
 - ✅ **Rule Export** - YAML/JSON export functionality
-- ✅ **End-to-End Testing** - Comprehensive test suite (43/43 tests passing)
+- ✅ **End-to-End Testing** - Comprehensive test suite (55/55 tests passing)
 
 **Next Phase (Weeks 5-8):**
 - 🔄 **Data Cleaning Engine** - Actual data transformation
@@ -24,7 +24,8 @@ Smart data cleaning tool for large CSV/Parquet files using AI-powered rule disco
 - 👤 **Human-in-the-loop** validation UI with Streamlit
 - 🚀 **Batched LLM calls** - all columns processed in one shot (~10 seconds)
 - 📊 **Smart sampling** - profile subset of rows for speed
-- 🧪 **Comprehensive testing** - 43 automated tests covering all functionality
+- 🧪 **Comprehensive testing** - 55 automated tests covering all functionality
+- 🧩 **Multi-mode execution** - supports Heuristic, Groq, and Ollama
 
 ## Quick Start
 
@@ -111,6 +112,18 @@ venv/bin/python -m streamlit run src/app.py
    - Export accepted rules as YAML or JSON
    - Ready to use in your data pipeline
 
+## Environment Modes
+
+DataMender now supports 3 distinct test and runtime modes, verified across all configurations:
+
+| Mode | Description | Configuration |
+|---------------|---------------------|--------------------|
+| **Heuristic only** | Rule discovery using heuristics only | ```bash export GROQ_API_KEY=''; unset DATAMENDER_TEST_OLLAMA``` |
+| **Groq (Cloud)** | Uses Groq LLM API for AI rule suggestions | ```bash export GROQ_API_KEY=gsk_your_key_here; unset DATAMENDER_TEST_OLLAMA``` |
+| **Ollama (Local)** | Uses local Ollama model (via Docker) | ```bash export DATAMENDER_TEST_OLLAMA=1; export GROQ_API_KEY=''``` |
+
+💡 If both Groq and Ollama are set, Groq takes priority and Ollama serves as fallback.
+
 ### Testing
 
 #### Comprehensive End-to-End Tests
@@ -119,9 +132,9 @@ venv/bin/python -m streamlit run src/app.py
 python test_end_to_end.py
 ```
 
-**🧪 Test Suite Results: 43/43 Tests Passing**
+**🧪 Test Suite Results: 55/55 Tests Passing**
 
-The comprehensive test suite validates all implemented functionality:
+The comprehensive test suite now validates both non-LLM and LLM-enhanced paths, including fallback and edge cases:
 
 - **📊 Data Profiler Tests** - Profile structure, data types, statistics, performance
 - **🔍 Rule Discovery Tests** - Heuristic rules, LLM integration, rule validation  
@@ -129,13 +142,15 @@ The comprehensive test suite validates all implemented functionality:
 - **🔄 Integration Tests** - Complete workflow simulation
 - **⚡ Performance Tests** - Speed benchmarks, memory usage, thresholds
 - **🛡️ Error Handling Tests** - Invalid inputs, edge cases, fallbacks
+- **🧪 Edge Case Tests** - Nulls, strings, constants, date-like fields
+- **🤖 LLM Tests (Groq & Ollama)** - online inference, fallback, malformed responses
 
 **Performance Benchmarks:**
 - ✅ **258K+ rows/second** processing speed
 - ✅ **<100MB** memory usage
 - ✅ **<2 seconds** complete workflow
-- ✅ **22 heuristic rules** discovered instantly
-- ✅ **33 total rules** with LLM integration
+- ✅ **25 heuristic rules** discovered instantly
+- ✅ **Up to 40 total rules** with LLM integration
 
 #### Basic CLI Testing
 
@@ -155,7 +170,7 @@ DataMender/
 │   ├── llm_client.py        # LLM abstraction (Groq/Ollama)
 │   ├── app.py              # Streamlit UI with human-in-the-loop
 │   └── generate_sample_data.py  # Generate test dataset
-├── test_end_to_end.py      # Comprehensive test suite (43 tests)
+├── test_end_to_end.py      # Comprehensive test suite (55 tests)
 ├── test_cli.py             # Basic CLI testing
 ├── .streamlit/
 │   └── config.toml         # Streamlit config (5GB upload limit)
@@ -178,25 +193,27 @@ DataMender/
 
 ### 🧪 Comprehensive Test Suite
 
-Our end-to-end test suite validates all implemented functionality with **43 automated tests**:
+Our end-to-end test suite validates all implemented functionality with **55 automated tests**:
 
 | Test Category | Tests | Status | Performance |
 |---------------|-------|--------|-------------|
 | **Data Profiler** | 8 tests | ✅ PASS | 258K+ rows/sec |
-| **Rule Discovery** | 8 tests | ✅ PASS | 22 heuristic rules |
-| **LLM Integration** | 3 tests | ✅ PASS | 33 total rules |
+| **Rule Discovery** | 8 tests | ✅ PASS | 25 heuristic rules |
+| **LLM Integration (Groq)** | 3 tests | ✅ PASS | 15 LLM rules |
+| **LLM Integration (Ollama)** | 3 tests | ✅ PASS | Local fallback verified: 3 LLM Rules |
 | **Export Functionality** | 5 tests | ✅ PASS | <0.01s export |
 | **Integration Workflow** | 5 tests | ✅ PASS | <2s complete |
-| **Performance Benchmarks** | 6 tests | ✅ PASS | <100MB memory |
-| **Error Handling** | 4 tests | ✅ PASS | Robust fallbacks |
-| **Setup & Cleanup** | 4 tests | ✅ PASS | Auto cleanup |
+| **Performance Benchmarks** | 6 tests | ✅ PASS | <150MB memory |
+| **Error Handling & Edge Cases** | 6 tests | ✅ PASS | Robust fallbacks |
+| **LLM Robustness & Parsing** | 4 tests | ✅ PASS | Handles malformed responses |
+| **Setup & Cleanup** | 7 tests | ✅ PASS | Auto cleanup including Temp files, CLI smoke, skips |
 
 ### 📊 Performance Metrics
 
 - **⚡ Processing Speed**: 258,476 rows/second
 - **🧠 Memory Usage**: <100MB peak usage
 - **⏱️ Total Workflow**: <2.16 seconds
-- **🔍 Rule Discovery**: 22 heuristic + 11 LLM rules
+- **🔍 Rule Discovery**: 25 heuristic + 15 LLM rules
 - **💾 Export Speed**: <0.01 seconds for YAML/JSON
 
 ### 🎯 Quality Assurance
@@ -206,6 +223,8 @@ Our end-to-end test suite validates all implemented functionality with **43 auto
 - **✅ Performance Validation** against defined thresholds
 - **✅ Integration Testing** for complete workflows
 - **✅ Memory Management** with automatic cleanup
+- **✅ Multi-Mode Validation** across Heuristic, Groq, and Ollama configurations
+- **✅ LLM Fallback Handling** confirmed reliable
 
 ## Test Insights & Validation
 
@@ -220,8 +239,8 @@ The comprehensive test suite demonstrates that DataMender successfully implement
    - Robust error handling for edge cases (empty datasets, invalid files)
 
 2. **🔍 Rule Discovery Innovation**
-   - **Heuristic Rules**: 22 universal quality checks (nulls, negatives, ranges)
-   - **LLM Integration**: 11 AI-generated rules with domain-specific insights
+   - **Heuristic Rules**: 25 universal quality checks (nulls, negatives, ranges)
+   - **LLM Integration**: 15 AI-generated rules with domain-specific insights
    - **Hybrid Approach**: Combines speed of heuristics with intelligence of LLMs
    - **Fallback Mechanism**: Graceful degradation when LLM unavailable
 
@@ -255,4 +274,3 @@ The test suite also validates that the foundation is ready for the next developm
 - **✅ Data Structure**: Profile format supports cleaning operations
 - **✅ Performance**: System can handle the additional load of data transformation
 - **✅ Error Handling**: Robust enough for production data cleaning operations
-
