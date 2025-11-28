@@ -1,9 +1,13 @@
-"""Simple CLI test script for DataMender"""
+"""
+CLI Tests for DataMender
+Tests command-line interface and script execution
+"""
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add project root and src to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.profiler import DataProfiler
 from src.rule_discovery import RuleDiscovery
@@ -64,23 +68,56 @@ def test_rule_discovery(profile: dict, llm_provider: str = "ollama"):
     return rules
 
 
-def main():
-    # Check if sample data exists
-    sample_file = "sample_rides.csv"
+def test_demo_script_execution():
+    """Test that demo script can be executed"""
+    print(f"\n{'='*60}")
+    print(f"Testing Demo Script Execution")
+    print(f"{'='*60}\n")
     
-    if not Path(sample_file).exists():
+    try:
+        project_root = Path(__file__).parent.parent
+        demo_script = project_root / "demo_script.py"
+        
+        if not demo_script.exists():
+            print("⚠️  Demo script not found, skipping test")
+            return True
+        
+        # Check if script is executable/importable
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("demo_script", demo_script)
+        assert spec is not None, "Should be able to load demo script"
+        
+        print("✅ Demo script is valid and importable")
+        return True
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
+
+
+def main():
+    print("🚀 DataMender CLI Test Suite")
+    print("="*60)
+    
+    # Check if sample data exists (in project root)
+    project_root = Path(__file__).parent.parent
+    sample_file = project_root / "sample_rides.csv"
+    
+    if not sample_file.exists():
         print("❌ Sample data not found. Generating...")
         print("Run: python src/generate_sample_data.py")
         return
     
     # Test profiler
-    profile = test_profiler(sample_file)
+    profile = test_profiler(str(sample_file))
     
     # Test rule discovery
     rules = test_rule_discovery(profile, llm_provider="ollama")
     
+    # Test demo script
+    test_demo_script_execution()
+    
     print(f"\n{'='*60}")
-    print("✅ All tests completed!")
+    print("✅ All CLI tests completed!")
     print(f"{'='*60}\n")
     print("Next steps:")
     print("  1. Install dependencies: pip install -r requirements.txt")

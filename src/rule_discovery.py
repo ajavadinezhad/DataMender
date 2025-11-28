@@ -8,16 +8,10 @@ class RuleDiscovery:
     """Discover data quality rules using LLM and heuristics"""
     
     def __init__(self, llm_provider: str = "ollama"):
-        """
-        Initialize rule discovery
-        
-        Args:
-            llm_provider: one of {"groq","ollama","openai","mock"}
-        """
+        """Initialize rule discovery"""
 
         self._ALLOWED_PROVIDERS = {"groq", "ollama", "openai", "mock"}
 
-        # Fail fast for invalid provider (Error Handling test expects this)
         if llm_provider not in self._ALLOWED_PROVIDERS:
             raise ValueError(f"Invalid LLM provider: {llm_provider}")
             
@@ -35,28 +29,17 @@ class RuleDiscovery:
             self._llm_error = None
 
         except Exception as e:
-            # Valid provider but unavailable (e.g., missing GROQ_API_KEY or Ollama not running).
-            # Do NOT raise-tests should continue and fall back to heuristics.
             self.llm = None
             self._llm_error = f"{self._llm_provider} unavailable: {e}"
 
     
 
     def universal_checks(self, column_profile: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Apply universal sanity checks (heuristics)
-        
-        Args:
-            column_profile: Column profile from profiler
-            
-        Returns:
-            List of suggested rules
-        """
+        """Apply universal sanity checks (heuristics)"""
         rules = []
         col_name = column_profile["name"]
         dtype = column_profile["dtype"]
         
-        # Null check
         if column_profile["null_percentage"] > 0:
             rules.append({
                 "column": col_name,
@@ -67,11 +50,8 @@ class RuleDiscovery:
                 "source": "heuristic"
             })
         
-        # Numeric checks
         if "min" in column_profile:
-            # Negative values check
             if column_profile.get("negative_count", 0) > 0:
-                # Check if column name suggests positive values
                 if any(word in col_name.lower() for word in ['age', 'price', 'cost', 'amount', 'distance', 'duration', 'count', 'quantity']):
                     rules.append({
                         "column": col_name,
@@ -82,11 +62,9 @@ class RuleDiscovery:
                         "source": "heuristic"
                     })
             
-            # Range checks
             min_val = column_profile["min"]
             max_val = column_profile["max"]
             
-            # Age-like columns
             if 'age' in col_name.lower():
                 if min_val < 0 or max_val > 150:
                     rules.append({
@@ -100,7 +78,6 @@ class RuleDiscovery:
                         "source": "heuristic"
                     })
             
-            # Percentage-like columns
             if any(word in col_name.lower() for word in ['percent', 'rate', 'ratio']):
                 if min_val < 0 or max_val > 100:
                     rules.append({
@@ -114,9 +91,7 @@ class RuleDiscovery:
                         "source": "heuristic"
                     })
         
-        # String checks (support both Polars representations)
         if dtype in ("Utf8", "String"):
-            # Empty string check
             rules.append({
                 "column": col_name,
                 "type": "empty_string_check",
@@ -126,7 +101,6 @@ class RuleDiscovery:
                 "source": "heuristic"
             })
         
-        # Uniqueness check
         if column_profile["unique_count"] == column_profile["total_count"]:
             rules.append({
                 "column": col_name,
@@ -140,15 +114,7 @@ class RuleDiscovery:
         return rules
     
     def llm_suggest_rules(self, column_profile: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Use LLM to suggest rules based on column profile
-        
-        Args:
-            column_profile: Column profile from profiler
-            
-        Returns:
-            List of LLM-suggested rules
-        """
+        """Use LLM to suggest rules based on column profile"""
         system_prompt = """You are a data quality expert. Given a column profile, suggest data validation rules.
 Return rules as a JSON array with this structure:
 [
@@ -183,16 +149,13 @@ Return only valid JSON array."""
         try:
             response = self.llm.generate(user_prompt, system_prompt)
             
-            # Extract JSON from response
             response = response.strip()
             if response.startswith("```"):
-                # Remove code blocks
                 lines = response.split("\n")
                 response = "\n".join([l for l in lines if not l.startswith("```")])
             
             rules = json.loads(response)
             
-            # Mark all LLM rules with source
             if isinstance(rules, list):
                 for rule in rules:
                     rule["source"] = "llm"
@@ -203,19 +166,10 @@ Return only valid JSON array."""
             return []
     
     def llm_suggest_rules_batch(self, columns: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Suggest rules for multiple columns in one LLM call (much faster!)
-        
-        Args:
-            columns: List of column profiles
-            
-        Returns:
-            Dictionary mapping column names to lists of rules
-        """
+        """Suggest rules for multiple columns in one LLM call"""
         if not self.llm:
             return {}
         
-        # Build compact summary of all columns
         columns_summary = []
         for col in columns:
             summary = {
@@ -225,7 +179,6 @@ Return only valid JSON array."""
                 "unique": col["unique_count"]
             }
             
-            # Add type-specific info
             if "min" in col:
                 summary["range"] = f"{col['min']:.2f} to {col['max']:.2f}"
             if "unique_values" in col:
@@ -236,11 +189,19 @@ Return only valid JSON array."""
         system_prompt = """You are a data quality expert. Given multiple column profiles, suggest validation rules for columns that need them.
 Focus on columns with potential issues. Return ONLY a JSON object mapping column names to arrays of rules.
 
+IMPORTANT: Use these EXACT action names (case-sensitive):
+- "clip_range" - for clipping values to min/max bounds (include "min" and "max" in rule)
+- "drop_rows" - for removing rows that violate conditions
+- "fill_null" - for filling null values (include "strategy": "mean"/"median"/"mode"/"value")
+- "abs_value" - for taking absolute value of numeric columns
+- "treat_as_null" - for converting empty strings to nulls
+- "mark_as_id" - for marking unique columns as IDs (no transformation)
+
 Example format:
 {
   "column1": [
-    {"type": "range_check", "description": "...", "action": "...", "severity": "high"},
-    {"type": "format_check", "description": "...", "action": "...", "severity": "medium"}
+    {"type": "range_check", "description": "Values outside 0-100 range", "action": "clip_range", "min": 0, "max": 100, "severity": "high"},
+    {"type": "negative_check", "description": "Negative values found", "action": "drop_rows", "condition": "negative", "severity": "medium"}
   ],
   "column2": [...]
 }
@@ -257,16 +218,13 @@ Return only JSON object mapping column names to rule arrays."""
             response = self.llm.generate(user_prompt, system_prompt)
             print(f"[DEBUG] LLM Response (first 500 chars): {response[:500]}")
             
-            # Extract JSON from response - be robust about it
             response = response.strip()
             
-            # Remove markdown code blocks
             if "```" in response:
                 lines = response.split("\n")
                 response = "\n".join([l for l in lines if not l.startswith("```")])
                 response = response.strip()
             
-            # Find JSON object boundaries (first { to last })
             start = response.find("{")
             end = response.rfind("}") + 1
             
@@ -280,12 +238,11 @@ Return only JSON object mapping column names to rule arrays."""
             rules_dict = json.loads(response)
             print(f"[DEBUG] Parsed {len(rules_dict)} columns with rules")
             
-            # Mark all LLM rules with source
             if isinstance(rules_dict, dict):
                 for col_name, rules in rules_dict.items():
                     if isinstance(rules, list):
                         for rule in rules:
-                            rule["column"] = col_name  # Ensure column is set
+                            rule["column"] = col_name
                             rule["source"] = "llm"
                 return rules_dict
             return {}
@@ -294,30 +251,18 @@ Return only JSON object mapping column names to rule arrays."""
             return {}
     
     def discover_rules(self, profile: Dict[str, Any], use_llm: bool = True) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Discover all rules for dataset profile
-        
-        Args:
-            profile: Full dataset profile
-            use_llm: Whether to use LLM for suggestions
-            
-        Returns:
-            Dictionary mapping column names to lists of rules
-        """
+        """Discover all rules for dataset profile"""
         all_rules = {}
         
-        # First pass: heuristic rules for all columns
         for column_profile in profile["columns"]:
             col_name = column_profile["name"]
             rules = self.universal_checks(column_profile)
             all_rules[col_name] = rules
         
-        # Second pass: batch LLM suggestions (ONE call for all columns!)
         if use_llm:
             self._ensure_llm()
             llm_rules_dict = self.llm_suggest_rules_batch(profile["columns"]) if self.llm else {}
             
-            # Merge LLM rules into existing rules
             for col_name, llm_rules in llm_rules_dict.items():
                 if col_name in all_rules:
                     all_rules[col_name].extend(llm_rules)

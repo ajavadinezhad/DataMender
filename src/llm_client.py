@@ -10,12 +10,7 @@ class LLMClient:
     """Abstraction for free LLM providers (Ollama, Groq)"""
     
     def __init__(self, provider: str = "groq"):
-        """
-        Initialize LLM client
-        
-        Args:
-            provider: "ollama" or "groq"
-        """
+        """Initialize LLM client"""
         self.provider = provider.lower()
         self.available = True
         self._unavailable_reason = None
@@ -23,48 +18,32 @@ class LLMClient:
         if self.provider == "ollama":
             import ollama
             try:
-                # ping ollama or assume available
                 pass
             except Exception as e:
-                # Don't raise here. Mark unavailable; constructor succeeds.
                 self.available = False
                 self._unavailable_reason = f"Ollama unavailable: {e}"
                 return
-                # raise ValueError(f"Ollama unavailable: {e}")
 
             self.client = ollama
-            self.model = "llama3.2"  # Default model
+            self.model = "llama3.2"
             
         elif self.provider == "groq":
             from groq import Groq
             api_key = os.getenv("GROQ_API_KEY")
             if not api_key:
-                # Don't raise here. Mark unavailable; constructor succeeds.
                 self.available = False
                 self._unavailable_reason = "GROQ_API_KEY missing"
                 return
-                # raise ValueError("GROQ_API_KEY not found in environment. Get free key at: https://console.groq.com")
             
             self.client = Groq(api_key=api_key)
-            self.model = "llama-3.1-8b-instant"  # Fast and free
+            self.model = "llama-3.1-8b-instant"
             
         else:
             raise ValueError(f"Unknown provider: {provider}. Use: ollama or groq")
     
 
     def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
-        """
-        Generate text from prompt
-        
-        Args:
-            prompt: User prompt
-            system_prompt: Optional system prompt
-            
-        Returns:
-            Generated text
-        """
-
-        # If the client was initialized as unavailable, surface that now.
+        """Generate text from prompt"""
         if not self.is_available():
             raise RuntimeError(f"{self.provider} unavailable: {self._unavailable_reason}")
 

@@ -8,23 +8,16 @@ import json
 class DataProfiler:
     """Fast profiler for CSV/Parquet files using Polars"""
     
-    def __init__(self, file_path: str):
-        """
-        Initialize profiler with file path
-        
-        Args:
-            file_path: Path to CSV or Parquet file
-        """
-        self.file_path = Path(file_path)
+    def __init__(self, file_path: str = None):
+        """Initialize profiler with file path (optional)"""
+        self.file_path = Path(file_path) if file_path else None
         self.df: pl.DataFrame = None
         
-    def load_data(self, sample_size: int = None) -> None:
-        """
-        Load data from file
+    def load_data(self, sample_size: int = None, max_sample_size: int = 100000) -> None:
+        """Load data from file"""
+        if self.file_path is None:
+            raise ValueError("Cannot load data: file_path not set. Set self.df directly or provide file_path in __init__")
         
-        Args:
-            sample_size: Optional number of rows to sample (None = all rows)
-        """
         if self.file_path.suffix.lower() == '.parquet':
             self.df = pl.read_parquet(self.file_path)
         elif self.file_path.suffix.lower() in ['.csv', '.txt']:
@@ -33,21 +26,14 @@ class DataProfiler:
             raise ValueError(f"Unsupported file format: {self.file_path.suffix}")
         
         if sample_size and len(self.df) > sample_size:
+            if sample_size > max_sample_size:
+                sample_size = max_sample_size
             self.df = self.df.sample(n=sample_size)
 
-        # Enable fluent chaining: DataProfiler(...).load_data(...).profile_all()
         return self
     
     def profile_column(self, column: str) -> Dict[str, Any]:
-        """
-        Profile a single column
-        
-        Args:
-            column: Column name
-            
-        Returns:
-            Dictionary with column statistics
-        """
+        """Profile a single column"""
         col_data = self.df[column]
         dtype = str(col_data.dtype)
         
@@ -64,7 +50,6 @@ class DataProfiler:
             "unique_count": col_data.n_unique(),
         }
         
-        # Numeric columns
         if col_data.dtype in [pl.Int8, pl.Int16, pl.Int32, pl.Int64, 
                                pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64,
                                pl.Float32, pl.Float64]:
@@ -80,7 +65,6 @@ class DataProfiler:
                     "zero_count": int((stats == 0).sum()),
                 })
         
-        # String columns
         elif col_data.dtype == pl.Utf8:
             non_null = col_data.drop_nulls()
             if len(non_null) > 0:
@@ -91,11 +75,9 @@ class DataProfiler:
                     "avg_length": float(lengths.mean()),
                 })
                 
-                # Sample values for small unique counts
                 if profile["unique_count"] <= 20:
                     profile["unique_values"] = non_null.unique().to_list()[:20]
         
-        # Boolean columns
         elif col_data.dtype == pl.Boolean:
             non_null = col_data.drop_nulls()
             if len(non_null) > 0:
@@ -104,7 +86,6 @@ class DataProfiler:
                     "false_count": int((~non_null).sum()),
                 })
         
-        # Date/Datetime columns
         elif col_data.dtype in [pl.Date, pl.Datetime]:
             non_null = col_data.drop_nulls()
             if len(non_null) > 0:
@@ -116,17 +97,12 @@ class DataProfiler:
         return profile
     
     def profile_all(self) -> Dict[str, Any]:
-        """
-        Profile entire dataset
-        
-        Returns:
-            Dictionary with full dataset profile
-        """
+        """Profile entire dataset"""
         if self.df is None:
-            raise ValueError("Data not loaded. Call load_data() first.")
+            raise ValueError("Data not loaded. Call load_data() first or set self.df directly.")
         
         profile = {
-            "file_name": self.file_path.name,
+            "file_name": self.file_path.name if self.file_path else "in_memory_data",
             "row_count": len(self.df),
             "column_count": len(self.df.columns),
             "columns": []
@@ -139,15 +115,7 @@ class DataProfiler:
         return profile
     
     def to_json(self, output_path: str = None) -> str:
-        """
-        Export profile to JSON
-        
-        Args:
-            output_path: Optional path to save JSON file
-            
-        Returns:
-            JSON string
-        """
+        """Export profile to JSON"""
         profile = self.profile_all()
         json_str = json.dumps(profile, indent=2)
         
@@ -158,16 +126,7 @@ class DataProfiler:
 
 
 def profile_file(file_path: str, sample_size: int = None) -> Dict[str, Any]:
-    """
-    Convenience function to profile a file
-    
-    Args:
-        file_path: Path to file
-        sample_size: Optional sample size
-        
-    Returns:
-        Profile dictionary
-    """
+    """Convenience function to profile a file"""
     profiler = DataProfiler(file_path)
     profiler.load_data(sample_size=sample_size)
     return profiler.profile_all()
