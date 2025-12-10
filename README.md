@@ -117,11 +117,8 @@ python src/cli.py datasets/sample_rides_25k.csv 10000
 ### Run Tests
 
 ```bash
-# Run comprehensive end-to-end tests
-python tests/test_e2e.py
-
-# Or run all tests
-python tests/test_unit.py && python tests/test_integration.py && python tests/test_cli.py && python tests/test_e2e.py
+# Run all tests
+python tests/run_tests.py
 ```
 
 ---
@@ -267,17 +264,14 @@ The test suite is organized into four comprehensive categories:
 ### Running Tests
 
 ```bash
-# Run tests individually
+# Run all tests (Recommended)
+python tests/run_tests.py
+
+# Or run tests individually
 python tests/test_unit.py          # Unit tests (fast, isolated)
 python tests/test_integration.py   # Integration tests (workflows)
 python tests/test_cli.py           # CLI tests (command-line)
 python tests/test_e2e.py           # Comprehensive E2E tests (full coverage)
-
-# Run all tests sequentially
-python tests/test_unit.py && \
-python tests/test_integration.py && \
-python tests/test_cli.py && \
-python tests/test_e2e.py
 
 # Or using pytest (if installed)
 pytest tests/
