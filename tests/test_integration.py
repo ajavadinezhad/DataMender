@@ -17,7 +17,7 @@ from src.profiler import DataProfiler
 from src.rule_discovery import RuleDiscovery
 from src.data_cleaner import DataCleaner
 from src.metrics import CleaningMetrics
-from src.generate_sample_data import generate_ride_sharing_data
+from tests.data_generator import generate_ride_sharing_data
 
 
 class IntegrationTestSuite:
@@ -29,15 +29,16 @@ class IntegrationTestSuite:
         
     def log_test(self, test_name: str, passed: bool, message: str = ""):
         """Log test result"""
-        status = "✅ PASS" if passed else "❌ FAIL"
+        status = "PASS" if passed else "FAIL"
         self.test_results.append({"test": test_name, "passed": passed, "message": message})
-        print(f"{status} {test_name}: {message}")
+        if passed:
+            print(f"✅ {test_name}: {message}")
+        else:
+            print(f"❌ {test_name}: {message}")
     
     def test_complete_workflow(self):
         """Test complete workflow: Profile → Rules → Clean → Metrics"""
-        print("\n" + "="*60)
-        print("🔄 TEST: Complete Workflow")
-        print("="*60)
+
         
         try:
             # Generate test data
@@ -85,9 +86,7 @@ class IntegrationTestSuite:
     
     def test_streamlit_workflow_simulation(self):
         """Test workflow as it would run in Streamlit UI"""
-        print("\n" + "="*60)
-        print("🖥️  TEST: Streamlit Workflow Simulation")
-        print("="*60)
+
         
         try:
             # Simulate UI workflow
@@ -143,9 +142,7 @@ class IntegrationTestSuite:
     
     def test_incremental_cleaning(self):
         """Test incremental cleaning - applying rules on already cleaned data"""
-        print("\n" + "="*60)
-        print("🔄 TEST: Incremental Cleaning")
-        print("="*60)
+
         
         try:
             # Generate test data with issues
@@ -199,9 +196,7 @@ class IntegrationTestSuite:
     
     def test_cumulative_statistics(self):
         """Test cumulative statistics tracking across multiple cleaning passes"""
-        print("\n" + "="*60)
-        print("📊 TEST: Cumulative Statistics")
-        print("="*60)
+
         
         try:
             # Generate test data
@@ -260,8 +255,9 @@ class IntegrationTestSuite:
     
     def run_all_tests(self):
         """Run all integration tests"""
-        print("🚀 DataMender Integration Test Suite")
-        print("="*60)
+        print("\nINTEGRATION TESTS")
+        print("-" * 17)
+
         
         self.test_complete_workflow()
         self.test_streamlit_workflow_simulation()
@@ -272,9 +268,8 @@ class IntegrationTestSuite:
         total = len(self.test_results)
         passed = sum(1 for r in self.test_results if r["passed"])
         
-        print("\n" + "="*60)
-        print(f"📊 Results: {passed}/{total} tests passed")
-        print("="*60)
+        print()
+        print(f"Integration Tests: {passed}/{total} passed")
         
         return passed == total
 

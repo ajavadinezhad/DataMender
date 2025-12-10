@@ -1,4 +1,4 @@
-"""Week 3: Rule Discovery - LLM-based and heuristic rule generation"""
+"""Rule Discovery - LLM-based and heuristic rule generation"""
 from typing import Dict, Any, List
 import json
 from src.llm_client import LLMClient
@@ -216,7 +216,7 @@ Return only JSON object mapping column names to rule arrays."""
 
         try:
             response = self.llm.generate(user_prompt, system_prompt)
-            print(f"[DEBUG] LLM Response (first 500 chars): {response[:500]}")
+
             
             response = response.strip()
             
@@ -231,12 +231,11 @@ Return only JSON object mapping column names to rule arrays."""
             if start >= 0 and end > start:
                 response = response[start:end]
             else:
-                print(f"[ERROR] No JSON object found in response")
                 return {}
             
-            print(f"[DEBUG] Cleaned response (first 500 chars): {response[:500]}")
+
             rules_dict = json.loads(response)
-            print(f"[DEBUG] Parsed {len(rules_dict)} columns with rules")
+
             
             if isinstance(rules_dict, dict):
                 for col_name, rules in rules_dict.items():
@@ -247,7 +246,7 @@ Return only JSON object mapping column names to rule arrays."""
                 return rules_dict
             return {}
         except Exception as e:
-            print(f"[INFO] LLM unavailable ({e}); continuing with heuristics only.")
+
             return {}
     
     def discover_rules(self, profile: Dict[str, Any], use_llm: bool = True) -> Dict[str, List[Dict[str, Any]]]:

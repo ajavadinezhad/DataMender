@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Comprehensive End-to-End Test Suite for DataMender (Weeks 1-7)
+Comprehensive End-to-End Test Suite for DataMender
 Tests: Profiler → Rule Discovery → Validation → Cleaning → Metrics → Export
 
 This test suite validates all implemented functionality:
-- Data Profiler (Week 2)
-- Rule Discovery (Week 3) 
-- Human Validation (Week 4)
-- Data Cleaning Engine (Week 5)
-- Metrics & Re-Profiling (Week 6)
-- Integration & Export (Week 7)
+- Data Profiler
+- Rule Discovery
+- Human Validation
+- Data Cleaning Engine
+- Metrics & Re-Profiling
+- Integration & Export
 """
 
 import sys
@@ -37,7 +37,7 @@ from src.rule_discovery import RuleDiscovery
 from src.llm_client import LLMClient
 from src.data_cleaner import DataCleaner
 from src.metrics import CleaningMetrics, compare_profiles
-from src.generate_sample_data import generate_ride_sharing_data
+from tests.data_generator import generate_ride_sharing_data
 
 
 class DataMenderE2ETest:
@@ -51,22 +51,22 @@ class DataMenderE2ETest:
         
     def log_test(self, test_name: str, passed: bool, message: str = "", duration: float = 0):
         """Log test result"""
-        status = "✅ PASS" if passed else "❌ FAIL"
+        status = "PASS" if passed else "FAIL"
         self.test_results.append({
             "test": test_name,
             "passed": passed,
             "message": message,
             "duration": duration
         })
-        print(f"{status} {test_name}: {message}")
-        if duration > 0:
-            print(f"    ⏱️  Duration: {duration:.2f}s")
+        if passed:
+            print(f"✅ {test_name}: {message}")
+        else:
+            print(f"❌ {test_name}: {message}")
+
     
     def setup_test_data(self):
         """Generate test data for testing"""
-        print("\n" + "="*60)
-        print("🔧 SETUP: Generating Test Data")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -132,11 +132,10 @@ class DataMenderE2ETest:
             self.log_test("Setup Test Data", False, f"Error: {str(e)}", duration)
             return False
     
+    
     def test_profiler_functionality(self):
         """Test data profiler functionality"""
-        print("\n" + "="*60)
-        print("📊 TEST 1: Data Profiler Functionality")
-        print("="*60)
+
         
         if not self.test_data_path:
             self.log_test("Profiler Test", False, "No test data available")
@@ -215,11 +214,10 @@ class DataMenderE2ETest:
             traceback.print_exc()
             return None
     
+    
     def test_rule_discovery_heuristic(self, profile: Dict[str, Any]):
         """Test heuristic rule discovery"""
-        print("\n" + "="*60)
-        print("🔍 TEST 2: Heuristic Rule Discovery")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -293,11 +291,10 @@ class DataMenderE2ETest:
             traceback.print_exc()
             return None
     
+    
     def test_rule_discovery_llm(self, profile: Dict[str, Any]):
         """Test LLM rule discovery (with fallback)"""
-        print("\n" + "="*60)
-        print("🤖 TEST 3: LLM Rule Discovery")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -365,11 +362,10 @@ class DataMenderE2ETest:
             traceback.print_exc()
             return None
     
+    
     def test_rule_export(self, rules: Dict[str, List[Dict[str, Any]]]):
         """Test rule export functionality"""
-        print("\n" + "="*60)
-        print("💾 TEST 4: Rule Export Functionality")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -440,11 +436,10 @@ class DataMenderE2ETest:
             traceback.print_exc()
             return False
     
+    
     def test_integration_workflow(self):
         """Test complete integration workflow"""
-        print("\n" + "="*60)
-        print("🔄 TEST 5: Integration Workflow")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -508,11 +503,10 @@ class DataMenderE2ETest:
             traceback.print_exc()
             return False
     
+    
     def test_performance_benchmarks(self):
         """Test performance benchmarks"""
-        print("\n" + "="*60)
-        print("⚡ TEST 6: Performance Benchmarks")
-        print("="*60)
+
         
         try:
             # Define performance thresholds
@@ -574,11 +568,10 @@ class DataMenderE2ETest:
             traceback.print_exc()
             return False
     
+    
     def test_error_handling(self):
         """Test error handling and edge cases"""
-        print("\n" + "="*60)
-        print("🛡️ TEST 7: Error Handling")
-        print("="*60)
+
         
         try:
             # Test invalid file path
@@ -626,9 +619,7 @@ class DataMenderE2ETest:
     
     def test_nonllm_edge_strings_and_nulls(self):
         """Non-LLM edges: empty/whitespace, mixed numeric-like strings, date-like strings (no false numeric checks)."""
-        print("\n" + "="*60)
-        print("🧪 TEST 8: Non-LLM Edges - Strings & Nulls")
-        print("="*60)
+
 
         import tempfile
         try:
@@ -666,9 +657,7 @@ class DataMenderE2ETest:
 
     def test_nonllm_edge_identifiers_and_uniqueness(self):
         """Non-LLM edges: constant column not unique; leading-zero strings not numeric-checked."""
-        print("\n" + "="*60)
-        print("🧪 TEST 9: Non-LLM Edges - Identifiers & Uniqueness")
-        print("="*60)
+
 
         import tempfile
         try:
@@ -699,9 +688,7 @@ class DataMenderE2ETest:
 
     def test_cli_smoke_missing_sample(self):
         """CLI smoke test: should exit cleanly and guide user if sample file is missing (suppress output)"""
-        print("\n" + "="*60)
-        print("🧪 TEST 10: CLI Smoke - Missing Sample")
-        print("="*60)
+
 
         try:
             import io
@@ -722,9 +709,7 @@ class DataMenderE2ETest:
 
     def test_llm_rules_present_when_key(self):
         """LLM (Groq): if a real key is present, we should see >0 LLM rules."""
-        print("\n" + "="*60)
-        print("🤖 TEST 11: LLM Online - Groq Rules Present (conditional)")
-        print("="*60)
+
 
         import os, tempfile, polars as pl
         if not os.getenv("GROQ_API_KEY"):
@@ -760,9 +745,7 @@ class DataMenderE2ETest:
 
     def test_llm_robustness_parsing_and_errors(self):
         """LLM robustness (no key): code-fenced JSON parsing + malformed output + runtime error, all without crashing."""
-        print("\n" + "="*60)
-        print("🛡️ TEST 12: LLM Robustness — Parsing & Errors")
-        print("="*60)
+
 
         import tempfile
         # Always restore _ensure_llm afterward
@@ -789,7 +772,7 @@ class DataMenderE2ETest:
             profile = DataProfiler(pth).load_data(sample_size=None).profile_all()
             rules_fenced = RuleDiscovery(llm_provider="groq").discover_rules(profile, use_llm=True)
             has_llm = any(r.get("source") == "llm" for r in rules_fenced.get("age", []))
-            self.log_test("LLM Parsing (fenced JSON)", has_llm, f"Rules: {rules_fenced.get('age', [])}")
+            self.log_test("LLM Parsing (fenced JSON)", has_llm, f"Rules found: {len(rules_fenced.get('age', []))}")
 
             # ---- B) malformed JSON ----
             def fake_bad(self):
@@ -824,9 +807,7 @@ class DataMenderE2ETest:
 
     def test_ollama_rules_present_when_local(self):
         """LLM (Ollama): if DATAMENDER_TEST_OLLAMA=1 and service is up, expect >0 LLM rules."""
-        print("\n" + "="*60)
-        print("🤖 TEST 13: LLM Online - Ollama Rules Present (conditional)")
-        print("="*60)
+
 
         import os, tempfile
         if os.getenv("DATAMENDER_TEST_OLLAMA") != "1":
@@ -849,9 +830,7 @@ class DataMenderE2ETest:
             return False
 
     def test_invalid_extension_rejected(self):
-        print("\n" + "="*60)
-        print("🧪 TEST 14: Invalid Extension Rejected")
-        print("="*60)
+
         try:
             DataProfiler("weird.xlsx").load_data()
             self.log_test("Invalid Extension", False, "Should have raised for unsupported format")
@@ -861,14 +840,12 @@ class DataMenderE2ETest:
             return True
 
     # ============================================================================
-    # WEEK 5: DATA CLEANER TESTS
+    # DATA CLEANER TESTS
     # ============================================================================
     
     def test_data_cleaner_initialization(self):
         """Test DataCleaner initialization"""
-        print("\n" + "="*60)
-        print("🧹 TEST 15: DataCleaner Initialization")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -895,9 +872,7 @@ class DataMenderE2ETest:
     
     def test_action_normalization(self):
         """Test action name normalization"""
-        print("\n" + "="*60)
-        print("🔄 TEST 16: Action Normalization")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -927,9 +902,7 @@ class DataMenderE2ETest:
     
     def test_clip_range(self):
         """Test range clipping functionality"""
-        print("\n" + "="*60)
-        print("📏 TEST 17: Clip Range")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -981,9 +954,7 @@ class DataMenderE2ETest:
     
     def test_fill_null(self):
         """Test null filling functionality"""
-        print("\n" + "="*60)
-        print("🔧 TEST 18: Fill Null")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1024,9 +995,7 @@ class DataMenderE2ETest:
     
     def test_drop_rows_cleaning(self):
         """Test row dropping functionality"""
-        print("\n" + "="*60)
-        print("🗑️  TEST 19: Drop Rows")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1069,9 +1038,7 @@ class DataMenderE2ETest:
     
     def test_abs_value(self):
         """Test absolute value functionality"""
-        print("\n" + "="*60)
-        print("🔢 TEST 20: Absolute Value")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1110,9 +1077,7 @@ class DataMenderE2ETest:
     
     def test_treat_as_null(self):
         """Test empty string to null conversion"""
-        print("\n" + "="*60)
-        print("🔄 TEST 21: Treat As Null")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1152,9 +1117,7 @@ class DataMenderE2ETest:
     
     def test_cross_column_check(self):
         """Test cross-column validation"""
-        print("\n" + "="*60)
-        print("🔗 TEST 22: Cross-Column Check")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1201,9 +1164,7 @@ class DataMenderE2ETest:
     
     def test_apply_multiple_rules(self):
         """Test applying multiple rules in sequence"""
-        print("\n" + "="*60)
-        print("🔄 TEST 23: Apply Multiple Rules")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1244,9 +1205,7 @@ class DataMenderE2ETest:
     
     def test_cleaning_stats(self):
         """Test cleaning statistics calculation"""
-        print("\n" + "="*60)
-        print("📊 TEST 24: Cleaning Statistics")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1291,9 +1250,7 @@ class DataMenderE2ETest:
     
     def test_export_cleaned_data(self):
         """Test exporting cleaned data"""
-        print("\n" + "="*60)
-        print("💾 TEST 25: Export Cleaned Data")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1336,9 +1293,7 @@ class DataMenderE2ETest:
     
     def test_chunked_cleaning_large_file(self):
         """Test chunked cleaning for large datasets"""
-        print("\n" + "="*60)
-        print("🔄 TEST 26: Chunked Cleaning (Large File Simulation)")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1382,9 +1337,7 @@ class DataMenderE2ETest:
     
     def test_chunked_export_large_file(self):
         """Test chunked export for large datasets"""
-        print("\n" + "="*60)
-        print("💾 TEST 27: Chunked Export (Large File Simulation)")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1429,9 +1382,7 @@ class DataMenderE2ETest:
     
     def test_sampling_limits(self):
         """Test sampling limits in profiler"""
-        print("\n" + "="*60)
-        print("📊 TEST 28: Sampling Limits")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1471,14 +1422,12 @@ class DataMenderE2ETest:
             return False
     
     # ============================================================================
-    # WEEK 6: METRICS TESTS
+    # METRICS TESTS
     # ============================================================================
     
     def test_metrics_initialization(self):
         """Test CleaningMetrics initialization"""
-        print("\n" + "="*60)
-        print("📈 TEST 26: Metrics Initialization")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1527,9 +1476,7 @@ class DataMenderE2ETest:
     
     def test_metrics_calculation(self):
         """Test comprehensive metrics calculation"""
-        print("\n" + "="*60)
-        print("📊 TEST 27: Metrics Calculation")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1619,9 +1566,7 @@ class DataMenderE2ETest:
     
     def test_comparison_table(self):
         """Test before/after comparison table"""
-        print("\n" + "="*60)
-        print("📋 TEST 28: Comparison Table")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1670,9 +1615,7 @@ class DataMenderE2ETest:
     
     def test_reprofiling(self):
         """Test re-profiling cleaned data"""
-        print("\n" + "="*60)
-        print("🔄 TEST 29: Re-Profiling")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1721,14 +1664,12 @@ class DataMenderE2ETest:
             return False
     
     # ============================================================================
-    # WEEK 7: INTEGRATION TESTS
+    # INTEGRATION TESTS
     # ============================================================================
     
     def test_cleaning_workflow(self):
         """Test complete cleaning workflow: Profile → Rules → Clean → Metrics"""
-        print("\n" + "="*60)
-        print("🔄 TEST 30: Complete Cleaning Workflow")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1779,9 +1720,7 @@ class DataMenderE2ETest:
     
     def test_cleaning_error_handling(self):
         """Test error handling for cleaning invalid inputs"""
-        print("\n" + "="*60)
-        print("🛡️  TEST 31: Cleaning Error Handling")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1823,9 +1762,7 @@ class DataMenderE2ETest:
     
     def test_cleaning_performance(self):
         """Test cleaning performance"""
-        print("\n" + "="*60)
-        print("⚡ TEST 32: Cleaning Performance")
-        print("="*60)
+
         
         start_time = time.time()
         
@@ -1872,20 +1809,12 @@ class DataMenderE2ETest:
         """Clean up test resources"""
         if self.test_data_path and Path(self.test_data_path).exists():
             Path(self.test_data_path).unlink()
-            print(f"🧹 Cleaned up test data: {self.test_data_path}")
+            print(f"Cleaned up test data: {self.test_data_path}")
     
     def run_all_tests(self):
         """Run all end-to-end tests"""
-        print("🚀 DataMender Comprehensive End-to-End Test Suite")
-        print("="*60)
-        print("Testing implementation for Weeks 1-7:")
-        print("• Week 2: Data Profiler")
-        print("• Week 3: Rule Discovery") 
-        print("• Week 4: Human Validation & Export")
-        print("• Week 5: Data Cleaning Engine")
-        print("• Week 6: Metrics & Re-Profiling")
-        print("• Week 7: Integration & Performance")
-        print("="*60)
+        print("\nE2E TESTS")
+        print("-" * 9)
         
         overall_start_time = time.time()
         
@@ -1939,7 +1868,7 @@ class DataMenderE2ETest:
             if not self.test_invalid_extension_rejected():
                 return False
             
-            # Week 5: Data Cleaner Tests
+            # Data Cleaner Tests
             self.test_data_cleaner_initialization()
             self.test_action_normalization()
             self.test_clip_range()
@@ -1955,13 +1884,13 @@ class DataMenderE2ETest:
             self.test_chunked_export_large_file()
             self.test_sampling_limits()
             
-            # Week 6: Metrics Tests
+            # Metrics Tests
             self.test_metrics_initialization()
             self.test_metrics_calculation()
             self.test_comparison_table()
             self.test_reprofiling()
             
-            # Week 7: Integration Tests
+            # Integration Tests
             self.test_cleaning_workflow()
             self.test_cleaning_error_handling()
             self.test_cleaning_performance()
@@ -1969,25 +1898,23 @@ class DataMenderE2ETest:
             # Final results
             overall_duration = time.time() - overall_start_time
             
-            print("\n" + "="*60)
-            print("📊 FINAL TEST RESULTS")
-            print("="*60)
-            
+            print()
             passed_tests = sum(1 for result in self.test_results if result["passed"])
             total_tests = len(self.test_results)
             
-            print(f"✅ Passed: {passed_tests}/{total_tests} tests")
-            print(f"⏱️  Total Duration: {overall_duration:.2f}s")
+            print(f"E2E Tests: {passed_tests}/{total_tests} passed")
+            print(f"Total Duration: {overall_duration:.2f}s")
+            
             
             if passed_tests == total_tests:
-                print("🎉 ALL TESTS PASSED! DataMender implementation is working correctly.")
+
                 return True
             else:
-                print("❌ Some tests failed. Check the output above for details.")
+                print("Some tests failed. Check the output above for details.")
                 return False
                 
         except Exception as e:
-            print(f"❌ Test suite failed with error: {str(e)}")
+            print(f"Test suite failed with error: {str(e)}")
             traceback.print_exc()
             return False
         
@@ -2001,11 +1928,10 @@ def main():
     success = test_suite.run_all_tests()
     
     if success:
-        print("\n🎯 DataMender is complete and ready!")
-        print("✅ All functionality (Weeks 1-7) is working correctly.")
+
         sys.exit(0)
     else:
-        print("\n❌ DataMender has issues that need to be fixed.")
+        print("\nDataMender has issues that need to be fixed.")
         sys.exit(1)
 
 

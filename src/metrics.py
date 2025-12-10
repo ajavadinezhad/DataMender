@@ -1,4 +1,4 @@
-"""Week 6: Re-Profiling & Metrics - Compare before/after cleaning"""
+"""Re-Profiling & Metrics - Compare before/after cleaning"""
 from typing import Dict, Any
 from src.profiler import DataProfiler
 from src.data_cleaner import DataCleaner

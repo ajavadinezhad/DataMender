@@ -83,7 +83,7 @@ source venv/bin/activate  # or `venv/bin/activate.fish` for fish shell
 pip install -r requirements.txt
 
 # Generate sample dataset (optional)
-python src/generate_sample_data.py
+python src/generate_datasets.py
 ```
 
 ### Generate Test Files
@@ -91,8 +91,8 @@ python src/generate_sample_data.py
 Generate test files of various sizes (25K to 20M records) for testing auto-chunking and large file handling:
 
 ```bash
-# Generate test files in test_files/ directory
-python generate_test_files.py
+# Generate test files in datasets/ directory
+python src/generate_datasets.py
 ```
 
 This will create CSV and Parquet files of increasing sizes:
@@ -102,7 +102,7 @@ This will create CSV and Parquet files of increasing sizes:
 - **XLarge**: 2.5M, 5M rows
 - **Huge**: 10M, 20M rows (maximum)
 
-Files are saved to the `test_files/` directory. The script automatically:
+Files are saved to the `datasets/` directory. The script automatically:
 - Creates both CSV and Parquet versions
 - Adds intentional data quality issues for testing
 - Limits maximum size to 20M records for safety
@@ -111,7 +111,7 @@ Files are saved to the `test_files/` directory. The script automatically:
 
 ```bash
 # Run complete workflow demo
-python demo_script.py sample_rides.csv 10000
+python src/cli.py datasets/sample_rides_25k.csv 10000
 ```
 
 ### Run Tests
@@ -251,7 +251,7 @@ The test suite is organized into four comprehensive categories:
 
 - Profiler CLI execution
 - Rule discovery CLI execution
-- Demo script validation
+- CLI script validation
 
 #### Comprehensive E2E Tests (`tests/test_e2e.py`)
 
@@ -287,28 +287,29 @@ pytest tests/
 
 ### Test Coverage
 
-**Total Tests: 98** (All passing ✅)
+**Total Tests: 119** (All passing ✅)
 
 #### Test Categories Breakdown
 
-- **Unit Tests**: 23 tests
-- **E2E Tests**: 73 tests
-- **Integration Tests**: 2 tests
+- **Unit Tests**: 35 tests (including error handling and edge cases)
+- **E2E Tests**: 76 tests
+- **Integration Tests**: 4 tests
 - **CLI Tests**: 1 test (3 functions, but 1 runs standalone)
 
 #### Code Coverage
 
-**Overall Coverage: 79%** (Core library modules, excluding Streamlit UI)
+**Overall Coverage: 84%** (Core library modules, excluding Streamlit UI)
 
 | Module                            | Statements | Coverage       |
 | --------------------------------- | ---------- | -------------- |
-| **profiler.py**             | 66         | **89%**  |
+| **profiler.py**             | 66         | **91%**  |
 | **rule_discovery.py**       | 116        | **89%**  |
-| **data_cleaner.py**         | 275        | **80%**  |
-| **metrics.py**              | 138        | **74%**  |
-| **generate_sample_data.py** | 62         | **74%**  |
-| **llm_client.py**           | 47         | **62%**  |
+| **metrics.py**              | 138        | **88%**  |
+| **data_cleaner.py**         | 275        | **88%**  |
+| **llm_client.py**           | 47         | **70%**  |
 | **__init__.py**       | 1          | **100%** |
+
+> **Note:** Missing coverage is primarily in error handling paths (Ollama connection failures, missing API keys) and edge cases that are difficult to test programmatically.
 
 > **Note:** Streamlit UI (`app.py`) is not included in coverage metrics as UI components are tested manually through interactive use.
 
@@ -325,6 +326,7 @@ DataMender/
 │   ├── data_cleaner.py          # Vectorized data cleaning engine
 │   ├── metrics.py               # Before/after comparison metrics
 │   ├── app.py                   # Streamlit UI with human-in-the-loop
+│   ├── cli.py                   # Complete workflow CLI script
 │   └── generate_sample_data.py  # Generate test dataset
 ├── tests/                       # Test suite directory
 │   ├── __init__.py              # Test package initialization
@@ -334,7 +336,7 @@ DataMender/
 │   └── test_e2e.py              # Comprehensive E2E tests
 ├── .streamlit/
 │   └── config.toml              # Streamlit config (5GB upload limit)
-├── demo_script.py               # Complete workflow demo script
+
 ├── requirements.txt             # Python dependencies
 ├── .env                         # API keys (gitignored)
 └── README.md                    # This file
@@ -359,7 +361,7 @@ DataMender/
 
 ## Project Status
 
-**✅ Complete (Weeks 1-7)**
+**✅ Complete**
 
 All core features have been fully implemented:
 

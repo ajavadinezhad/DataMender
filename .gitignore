@@ -36,6 +36,7 @@ wheels/
 .env
 
 # Data files
+datasets/
 *.csv
 *.parquet
 *.json
@@ -50,3 +51,8 @@ wheels/
 # OS
 .DS_Store
 Thumbs.db
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*

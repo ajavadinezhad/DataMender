@@ -1,16 +1,21 @@
 """
-Week 7: Demo Script for Video Recording
+CLI Script for DataMender
 Demonstrates the complete DataMender workflow from profiling to cleaning
 """
-import polars as pl
+import sys
 from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from src.profiler import DataProfiler
 from src.rule_discovery import RuleDiscovery
 from src.data_cleaner import DataCleaner
 from src.metrics import CleaningMetrics
 
 
-def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000):
+def demo_workflow(data_file: str = "datasets/sample_rides_25k.csv", sample_size: int = 10000):
     """
     Complete demo workflow showing DataMender capabilities
     
@@ -23,7 +28,6 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
     print("=" * 80)
     print()
     
-    # Step 1: Profile Data
     print("📊 Step 1: Profiling Dataset")
     print("-" * 80)
     profiler = DataProfiler(data_file)
@@ -34,21 +38,18 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
     print(f"   File: {profile['file_name']}")
     print()
     
-    # Show column summary
     print("   Column Summary:")
-    for col in profile['columns'][:5]:  # Show first 5 columns
+    for col in profile['columns'][:5]:
         null_pct = col.get('null_percentage', 0)
         print(f"   - {col['name']}: {col['dtype']}, {null_pct}% nulls")
     if len(profile['columns']) > 5:
         print(f"   ... and {len(profile['columns']) - 5} more columns")
     print()
     
-    # Step 2: Discover Rules
     print("🔍 Step 2: Discovering Data Quality Rules")
     print("-" * 80)
-    rule_discovery = RuleDiscovery(llm_provider="groq")  # Try Groq first
+    rule_discovery = RuleDiscovery(llm_provider="groq")
     
-    # Try with LLM, fallback to heuristics
     try:
         rules = rule_discovery.discover_rules(profile, use_llm=True)
         print("✅ Using LLM-enhanced rule discovery")
@@ -66,13 +67,12 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
     print(f"   - {llm_count} LLM-generated rules")
     print()
     
-    # Show sample rules
     print("   Sample Rules:")
     rule_count = 0
     for col_name, col_rules in rules.items():
         if rule_count >= 5:
             break
-        for rule in col_rules[:2]:  # Max 2 per column
+        for rule in col_rules[:2]:
             if rule_count >= 5:
                 break
             source = "⚡" if rule.get("source") == "heuristic" else "🤖"
@@ -80,12 +80,10 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
             rule_count += 1
     print()
     
-    # Step 3: Select Rules (simulate accepting all high/medium severity)
     print("✅ Step 3: Selecting Rules to Apply")
     print("-" * 80)
     accepted_rules = {}
     for col_name, col_rules in rules.items():
-        # Accept high and medium severity rules
         accepted = [r for r in col_rules if r.get("severity") in ["high", "medium"]]
         if accepted:
             accepted_rules[col_name] = accepted
@@ -94,7 +92,6 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
     print(f"   Accepted {total_accepted} rules (high/medium severity)")
     print()
     
-    # Step 4: Clean Data
     print("🧹 Step 4: Cleaning Data with Vectorized Operations")
     print("-" * 80)
     cleaner = DataCleaner(profiler.df)
@@ -110,7 +107,6 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
     print(f"   Rules applied: {cleaning_stats['rules_successful']}/{cleaning_stats['rules_applied']} successful")
     print()
     
-    # Step 5: Re-profile and Compare
     print("📊 Step 5: Re-Profiling Cleaned Data")
     print("-" * 80)
     cleaned_profiler = DataProfiler("")
@@ -120,7 +116,6 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
     print(f"✅ Re-profiled {cleaned_profile['row_count']:,} rows")
     print()
     
-    # Step 6: Calculate Metrics
     print("📈 Step 6: Calculating Cleaning Metrics")
     print("-" * 80)
     metrics_calc = CleaningMetrics(profile, cleaned_profile, cleaning_stats)
@@ -138,16 +133,22 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
     print(f"   Anomalies fixed: {anomaly_metrics['anomalies_fixed']}")
     print()
     
-    # Step 7: Export
     print("💾 Step 7: Exporting Cleaned Data")
     print("-" * 80)
-    output_file = "sample_rides_cleaned.parquet"
-    cleaner.export_cleaned_data(output_file, "parquet")
-    file_size = Path(output_file).stat().st_size / (1024 * 1024)  # MB
+    input_path = Path(data_file)
+    input_ext = input_path.suffix.lower()
+    if input_ext == ".parquet":
+        output_ext = "parquet"
+        output_file = input_path.stem + "_cleaned.parquet"
+    else:
+        output_ext = "csv"
+        output_file = input_path.stem + "_cleaned.csv"
+    
+    cleaner.export_cleaned_data(output_file, output_ext)
+    file_size = Path(output_file).stat().st_size / (1024 * 1024)
     print(f"✅ Exported to {output_file} ({file_size:.2f} MB)")
     print()
     
-    # Final Summary
     print("=" * 80)
     print("✅ Demo Complete!")
     print("=" * 80)
@@ -170,18 +171,16 @@ def demo_workflow(data_file: str = "sample_rides.csv", sample_size: int = 10000)
 if __name__ == "__main__":
     import sys
     
-    # Check if data file exists
-    data_file = "sample_rides.csv"
+    data_file = "datasets/sample_rides_25k.csv"
     if len(sys.argv) > 1:
         data_file = sys.argv[1]
     
     if not Path(data_file).exists():
         print(f"❌ Error: Data file '{data_file}' not found")
         print("   Please provide a valid CSV or Parquet file path")
-        print("   Or generate sample data: python src/generate_sample_data.py")
+        print("   Or generate sample data: python src/generate_datasets.py")
         sys.exit(1)
     
-    # Run demo
     sample_size = 10000
     if len(sys.argv) > 2:
         sample_size = int(sys.argv[2])

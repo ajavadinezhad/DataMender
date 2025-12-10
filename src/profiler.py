@@ -1,4 +1,4 @@
-"""Week 2: Core Profiler - Fast data profiling with Polars"""
+"""Core Profiler - Fast data profiling with Polars"""
 import polars as pl
 from pathlib import Path
 from typing import Dict, Any, List

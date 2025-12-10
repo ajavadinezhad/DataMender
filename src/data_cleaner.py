@@ -1,4 +1,4 @@
-"""Week 5: Batch Fix Engine - Vectorized data cleaning with Polars"""
+"""Batch Fix Engine - Vectorized data cleaning with Polars"""
 import polars as pl
 from typing import Dict, Any, List, Optional
 from pathlib import Path
@@ -9,7 +9,6 @@ from datetime import datetime
 class DataCleaner:
     """Apply data quality rules to clean datasets using vectorized operations"""
     
-    # Supported actions
     SUPPORTED_ACTIONS = {
         "clip_range", "fill_null", "drop_rows", "abs_value", 
         "treat_as_null", "mark_as_id", "cross_column_check"
@@ -67,7 +66,7 @@ class DataCleaner:
         action = rule.get("action")
         column = rule.get("column")
         
-        if not column or column not in self.df.columns:
+        if action != "cross_column_check" and (not column or column not in self.df.columns):
             return self
         
         original_action = action

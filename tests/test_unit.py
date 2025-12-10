@@ -18,8 +18,7 @@ from src.rule_discovery import RuleDiscovery
 from src.data_cleaner import DataCleaner, clean_data
 from src.metrics import CleaningMetrics, compare_profiles
 from src.llm_client import LLMClient
-from src.generate_sample_data import generate_ride_sharing_data
-import hashlib
+from tests.data_generator import generate_ride_sharing_data
 
 
 class UnitTestSuite:
@@ -30,9 +29,12 @@ class UnitTestSuite:
         
     def log_test(self, test_name: str, passed: bool, message: str = ""):
         """Log test result"""
-        status = "✅ PASS" if passed else "❌ FAIL"
+        status = "PASS" if passed else "FAIL"
         self.test_results.append({"test": test_name, "passed": passed, "message": message})
-        print(f"{status} {test_name}: {message}")
+        if passed:
+            print(f"✅ {test_name}: {message}")
+        else:
+            print(f"❌ {test_name}: {message}")
     
     # Profiler Unit Tests
     def test_profiler_initialization(self):
@@ -629,7 +631,7 @@ class UnitTestSuite:
             return False
     
     # Generate Sample Data Tests
-    def test_generate_sample_data(self):
+    def test_data_generator(self):
         """Test sample data generation"""
         try:
             df = generate_ride_sharing_data(100)
@@ -774,10 +776,320 @@ class UnitTestSuite:
             self.log_test("Generate Unique Rule ID", False, str(e))
             return False
     
+    def test_llm_client_missing_api_key(self):
+        """Test LLM client with missing API key"""
+        import os
+        original_key = os.environ.get("GROQ_API_KEY")
+        try:
+            # Temporarily remove API key
+            if "GROQ_API_KEY" in os.environ:
+                del os.environ["GROQ_API_KEY"]
+            
+            from src.llm_client import LLMClient
+            client = LLMClient(provider="groq")
+            
+            assert not client.is_available(), "Should be unavailable without API key"
+            assert client._unavailable_reason == "GROQ_API_KEY missing"
+            
+            self.log_test("LLM Client Missing API Key", True, "Correctly handles missing API key")
+            return True
+        except Exception as e:
+            self.log_test("LLM Client Missing API Key", False, str(e))
+            return False
+        finally:
+            # Restore API key
+            if original_key:
+                os.environ["GROQ_API_KEY"] = original_key
+    
+    def test_llm_client_generate_unavailable(self):
+        """Test generate() when client is unavailable"""
+        import os
+        original_key = os.environ.get("GROQ_API_KEY")
+        try:
+            # Temporarily remove API key
+            if "GROQ_API_KEY" in os.environ:
+                del os.environ["GROQ_API_KEY"]
+            
+            from src.llm_client import LLMClient
+            client = LLMClient(provider="groq")
+            
+            try:
+                client.generate("test prompt")
+                assert False, "Should raise RuntimeError"
+            except RuntimeError as e:
+                assert "unavailable" in str(e).lower()
+            
+            self.log_test("LLM Client Generate Unavailable", True, "Correctly raises error when unavailable")
+            return True
+        except Exception as e:
+            self.log_test("LLM Client Generate Unavailable", False, str(e))
+            return False
+        finally:
+            # Restore API key
+            if original_key:
+                os.environ["GROQ_API_KEY"] = original_key
+    
+    def test_llm_client_invalid_provider(self):
+        """Test LLM client with invalid provider"""
+        try:
+            from src.llm_client import LLMClient
+            try:
+                client = LLMClient(provider="invalid_provider")
+                assert False, "Should raise ValueError"
+            except ValueError as e:
+                assert "Unknown provider" in str(e)
+            
+            self.log_test("LLM Client Invalid Provider", True, "Correctly rejects invalid provider")
+            return True
+        except Exception as e:
+            self.log_test("LLM Client Invalid Provider", False, str(e))
+            return False
+    
+    def test_profiler_unsupported_format(self):
+        """Test profiler with unsupported file format"""
+        try:
+            from src.profiler import DataProfiler
+            import tempfile
+            from pathlib import Path
+            
+            # Create a file with unsupported extension (not .csv, .txt, or .parquet)
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                f.write('{"test": "data"}')
+                temp_path = f.name
+            
+            profiler = DataProfiler(temp_path)
+            try:
+                profiler.load_data()
+                assert False, "Should raise ValueError"
+            except ValueError as e:
+                assert "Unsupported file format" in str(e)
+            
+            Path(temp_path).unlink()
+            
+            self.log_test("Profiler Unsupported Format", True, "Correctly rejects unsupported format")
+            return True
+        except Exception as e:
+            self.log_test("Profiler Unsupported Format", False, str(e))
+            return False
+    
+    def test_profiler_load_without_file_path(self):
+        """Test profiler load_data without file_path"""
+        try:
+            from src.profiler import DataProfiler
+            profiler = DataProfiler()
+            try:
+                profiler.load_data()
+                assert False, "Should raise ValueError"
+            except ValueError as e:
+                assert "file_path not set" in str(e)
+            
+            self.log_test("Profiler Load Without File Path", True, "Correctly handles missing file_path")
+            return True
+        except Exception as e:
+            self.log_test("Profiler Load Without File Path", False, str(e))
+            return False
+    
+    def test_cleaner_invalid_column(self):
+        """Test cleaner with invalid column name"""
+        try:
+            from src.data_cleaner import DataCleaner
+            import polars as pl
+            
+            df = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
+            cleaner = DataCleaner(df)
+            
+            # Try to apply rule to non-existent column
+            rule = {"column": "nonexistent", "action": "clip_range", "min": 0, "max": 10}
+            original_len = len(cleaner.df)
+            cleaner.apply_rule(rule)
+            
+            # Should not modify dataframe
+            assert len(cleaner.df) == original_len
+            
+            self.log_test("Cleaner Invalid Column", True, "Correctly handles invalid column")
+            return True
+        except Exception as e:
+            self.log_test("Cleaner Invalid Column", False, str(e))
+            return False
+    
+    def test_cleaner_empty_column_name(self):
+        """Test cleaner with empty column name"""
+        try:
+            from src.data_cleaner import DataCleaner
+            import polars as pl
+            
+            df = pl.DataFrame({"col1": [1, 2, 3]})
+            cleaner = DataCleaner(df)
+            
+            # Try to apply rule with empty column
+            rule = {"column": "", "action": "clip_range", "min": 0, "max": 10}
+            original_len = len(cleaner.df)
+            cleaner.apply_rule(rule)
+            
+            # Should not modify dataframe
+            assert len(cleaner.df) == original_len
+            
+            self.log_test("Cleaner Empty Column Name", True, "Correctly handles empty column name")
+            return True
+        except Exception as e:
+            self.log_test("Cleaner Empty Column Name", False, str(e))
+            return False
+    
+    def test_metrics_edge_cases(self):
+        """Test metrics with edge cases"""
+        try:
+            from src.metrics import CleaningMetrics
+            
+            # Test with empty profiles
+            empty_original = {"row_count": 0, "column_count": 0, "columns": []}
+            empty_cleaned = {"row_count": 0, "column_count": 0, "columns": []}
+            empty_stats = {"rows_removed": 0, "rows_removed_percentage": 0}
+            
+            metrics = CleaningMetrics(empty_original, empty_cleaned, empty_stats)
+            result = metrics.calculate_metrics()
+            
+            assert "summary" in result
+            assert result["summary"]["original_rows"] == 0
+            
+            self.log_test("Metrics Edge Cases", True, "Handles edge cases correctly")
+            return True
+        except Exception as e:
+            self.log_test("Metrics Edge Cases", False, str(e))
+            return False
+    
+    def test_rule_discovery_empty_profile(self):
+        """Test rule discovery with empty profile"""
+        try:
+            from src.rule_discovery import RuleDiscovery
+            
+            rule_discovery = RuleDiscovery(llm_provider="groq")
+            empty_profile = {"row_count": 0, "column_count": 0, "columns": []}
+            
+            rules = rule_discovery.discover_rules(empty_profile, use_llm=False)
+            
+            # Should return empty dict, not crash
+            assert isinstance(rules, dict)
+            
+            self.log_test("Rule Discovery Empty Profile", True, "Handles empty profile correctly")
+            return True
+        except Exception as e:
+            self.log_test("Rule Discovery Empty Profile", False, str(e))
+            return False
+    
+    def test_cleaner_coverage_normalization(self):
+        """Test edge cases for action normalization"""
+        try:
+            # Test cases that hit specific branches
+            cases = [
+                ("reject if outside range", {"min": 0}, "drop_rows"), # hits 'outside', 'min' -> check desc
+                ("reject if outside range", {"min": 0, "description": "clip it"}, "clip_range"), # hits desc check
+                ("remove non-positive", {}, "drop_rows"), # hits 'non-positive'
+                ("treat as null", {}, "treat_as_null"), # hits 'treat' and 'null'
+                ("mark as id", {}, "mark_as_id"), # hits 'mark' and 'id'
+                ("unknown_action", {}, "unknown_action") # hits fallthrough
+            ]
+            for action, rule, expected in cases:
+                norm = DataCleaner.normalize_action(action, rule)
+                assert norm == expected, f"Failed for {action}: expected {expected}, got {norm}"
+            self.log_test("Coverage: Normalization", True, "Normalization edge cases passed")
+            return True
+        except Exception as e:
+            self.log_test("Coverage: Normalization", False, str(e))
+            return False
+
+    def test_cleaner_coverage_fill_strategies(self):
+        """Test additional fill strategies"""
+        try:
+            df = pl.DataFrame({"a": [1, None, 3, 1, 3], "b": [1.0, None, 3.0, 4.0, 5.0]})
+            
+            # Median
+            cleaner = DataCleaner(df.clone())
+            cleaner.apply_rule({"column": "a", "action": "fill_null", "strategy": "median"})
+            # Median of 1,3,1,3 is 2.0 (avg of 1 and 3)? Or 1? Polars median behavior.
+            # Assuming it runs without error is key, checking value approximately
+            assert cleaner.df["a"][1] is not None
+            
+            # Mode
+            cleaner = DataCleaner(df.clone())
+            cleaner.apply_rule({"column": "a", "action": "fill_null", "strategy": "mode"})
+            filled = cleaner.df["a"][1]
+            assert filled == 1 or filled == 3
+            
+            # Forward fill
+            cleaner = DataCleaner(df.clone())
+            cleaner.apply_rule({"column": "a", "action": "fill_null", "strategy": "forward_fill"})
+            assert cleaner.df["a"][1] == 1
+            
+            # Backward fill
+            cleaner = DataCleaner(df.clone())
+            cleaner.apply_rule({"column": "a", "action": "fill_null", "strategy": "backward_fill"})
+            assert cleaner.df["a"][1] == 3
+
+            self.log_test("Coverage: Fill Strategies", True, "All strategies passed")
+            return True
+        except Exception as e:
+            self.log_test("Coverage: Fill Strategies", False, str(e))
+            import traceback
+            traceback.print_exc()
+            return False
+
+    def test_cleaner_coverage_drop_conditions(self):
+        """Test additional drop conditions"""
+        try:
+            df = pl.DataFrame({"a": [0, -1, 5, 20, 100]})
+            
+            # Zero
+            cleaner = DataCleaner(df.clone())
+            cleaner.apply_rule({"column": "a", "action": "drop_rows", "condition": "zero"})
+            assert len(cleaner.df) == 4
+            
+            # Out of range (min only)
+            cleaner = DataCleaner(df.clone())
+            cleaner.apply_rule({"column": "a", "action": "drop_rows", "condition": "out_of_range", "min": 0})
+            assert len(cleaner.df) == 4 # -1 dropped
+            
+            # Out of range (max only)
+            cleaner = DataCleaner(df.clone())
+            cleaner.apply_rule({"column": "a", "action": "drop_rows", "condition": "out_of_range", "max": 20})
+            assert len(cleaner.df) == 4 # 100 dropped
+
+            self.log_test("Coverage: Drop Conditions", True, "All conditions passed")
+            return True
+        except Exception as e:
+            self.log_test("Coverage: Drop Conditions", False, str(e))
+            return False
+            
+    def test_cleaner_coverage_cross_column(self):
+        """Test additional cross column operators"""
+        try:
+            df = pl.DataFrame({"a": [10, 10, 10], "b": [5, 10, 15]})
+            
+            # >
+            c = DataCleaner(df.clone())
+            c.apply_rule({"column1": "a", "column2": "b", "action": "cross_column_check", "operator": ">"})
+            assert len(c.df) == 1, f"Expected 1 row for >, got {len(c.df)}"
+            
+            # ==
+            c = DataCleaner(df.clone())
+            c.apply_rule({"column1": "a", "column2": "b", "action": "cross_column_check", "operator": "=="})
+            assert len(c.df) == 1, f"Expected 1 row for ==, got {len(c.df)}"
+            
+            # !=
+            c = DataCleaner(df.clone())
+            c.apply_rule({"column1": "a", "column2": "b", "action": "cross_column_check", "operator": "!="})
+            assert len(c.df) == 2, f"Expected 2 rows for !=, got {len(c.df)}"
+
+            self.log_test("Coverage: Cross Column", True, "All operators passed")
+            return True
+        except Exception as e:
+            self.log_test("Coverage: Cross Column", False, str(e))
+            return False
+
     def run_all_tests(self):
         """Run all unit tests"""
-        print("🚀 DataMender Unit Test Suite")
-        print("="*60)
+        print("\nUNIT TESTS")
+        print("-" * 10)
+
         
         # Profiler tests
         self.test_profiler_initialization()
@@ -811,22 +1123,40 @@ class UnitTestSuite:
         # LLM Client tests
         self.test_llm_client_initialization()
         self.test_llm_client_is_available()
+        self.test_llm_client_missing_api_key()
+        self.test_llm_client_generate_unavailable()
+        self.test_llm_client_invalid_provider()
         
         # Generate sample data tests
-        self.test_generate_sample_data()
+        self.test_data_generator()
         
         # New feature tests
         self.test_clip_range_rows_clipped()
         self.test_progress_callback()
         self.test_generate_unique_rule_id()
         
+        # Error handling and edge case tests
+        self.test_profiler_unsupported_format()
+        self.test_profiler_load_without_file_path()
+        self.test_cleaner_invalid_column()
+        self.test_cleaner_empty_column_name()
+        self.test_metrics_edge_cases()
+        self.test_rule_discovery_empty_profile()
+        
+        # Coverage improvement tests
+        self.test_cleaner_coverage_normalization()
+        self.test_cleaner_coverage_fill_strategies()
+        self.test_cleaner_coverage_drop_conditions()
+        self.test_cleaner_coverage_cross_column()
+        
         # Summary
         total = len(self.test_results)
         passed = sum(1 for r in self.test_results if r["passed"])
         
-        print("\n" + "="*60)
-        print(f"📊 Results: {passed}/{total} tests passed")
-        print("="*60)
+        print()
+        print(f"Unit Tests: {passed}/{total} passed")
+
+
         
         return passed == total
 
